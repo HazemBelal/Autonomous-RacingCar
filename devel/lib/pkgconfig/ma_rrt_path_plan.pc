@@ -1,0 +1,8 @@
+prefix=/home/hazem/Downloads/project/devel
+
+Name: ma_rrt_path_plan
+Description: Description of ma_rrt_path_plan
+Version: 1.0.0
+Cflags: -I/home/hazem/Downloads/project/devel/include
+Libs: -L${prefix}/lib 
+Requires: rospy std_msgs geometry_msgs message_runtime

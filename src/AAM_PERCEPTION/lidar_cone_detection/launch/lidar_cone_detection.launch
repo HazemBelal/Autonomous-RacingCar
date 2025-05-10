@@ -1,0 +1,29 @@
+<launch>
+
+
+  <node 
+    name="rviz"
+    pkg="rviz"
+    type="rviz"
+    args="-d $(find lidar_cone_detection)/rviz/rviz_config.rviz"
+  />
+  
+  <node 
+    name="lidar_cone_detection"
+    pkg="lidar_cone_detection"
+    type="lidar_cone_detection"
+    output="screen"
+  />
+
+  
+  <node 
+    name="lidar_cone_centroid"
+    pkg="lidar_cone_detection"
+    type="lidar_cone_centroid.py"
+    output="screen"
+  />
+
+  
+
+
+</launch>

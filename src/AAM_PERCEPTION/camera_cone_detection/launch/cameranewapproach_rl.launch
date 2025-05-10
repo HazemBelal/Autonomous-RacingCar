@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+
+    <node name="hsv_node" pkg="camera_cone_detection" type="hsvfiltering_rl.py" output="screen"/> 
+    <node name="euclidean_clustering_node" pkg="camera_cone_detection" type="markerconversion.py" output="screen"/>
+
+</launch>

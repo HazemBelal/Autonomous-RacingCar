@@ -1,0 +1,23 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/hazem/Downloads/project/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/hazem/Downloads/project/src/AAM_PERCEPTION/camera_cone_detection/include/**",
+        "/home/hazem/Downloads/project/src/AAM_PERCEPTION/new_loc/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

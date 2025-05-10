@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<robot name="aamfsd" xmlns:xacro="http://www.ros.org/wiki/xacro"> 
+
+    <xacro:arg name="gpu" default="true"/>
+    <xacro:arg name="simulate_perception" default="true"/>
+    
+    <!-- ***************** -->
+    <!-- Imported elements -->
+    <!-- ***************** -->
+    
+    <!-- First we import all posible elements defined in the urdf.xacro files. All these elements are defined as macro:xacros -->
+
+    <!-- Import AAMFSD CAR base elements -->
+    <xacro:include filename="$(find aamfsd_description)/urdf/ros2/eufs_racecar/urdf/wheels.urdf.xacro"/>
+
+    <!-- Import EUFS base element with the chassis -->
+    <xacro:include filename="$(find aamfsd_description)/urdf/ros2/eufs_racecar/urdf/eufs_base.urdf.xacro"/>
+
+    <!-- Import all available sensors -->
+    <xacro:include filename="$(find aamfsd_description)/urdf/ros2/eufs_sensors/urdf/all_sensors.urdf.xacro" />
+    
+    <xacro:include filename="$(find aamfsd_description)/urdf/ros2/eufs_plugins/urdf/eufs_plugins.gazebo.xacro"/>
+    
+    <!-- ***************** -->
+    <!-- Global parameters -->
+    <!-- ***************** -->
+
+    
+        <xacro:property name="config" value="${xacro.load_yaml('$(find aamfsd_description)/urdf/ros2/eufs_racecar/robots/ads-dv/configDry.yaml')}"/>
+    <xacro:property name="PI" value="3.1415926535897931"/>
+
+    <!-- Wheel parameters -->
+    <xacro:property name="wheel_offset_x" value="1.0" />    <!-- x,y,z in translation from base_link to the center of the wheel -->
+    <xacro:property name="wheel_offset_y" value="0.75" />    
+    <xacro:property name="wheel_offset_z" value="0.0" />
+
+    <!-- Flag to select the high or low quality model -->
+    <xacro:property name="hq" value="true" />
+
+
+    <!-- *************** -->
+    <!-- Robots Elements -->
+    <!-- *************** -->
+
+    <!-- Here we create the robot elements using the xacro:macros imported at the beggining of this file -->
+
+    <!-- Summit XL base -->
+    <xacro:eufs_base chassis_mesh="file://$(find aamfsd_description)/urdf/ros2/eufs_racecar/meshes/ads_dv_chassis.dae"/>
+
+    <!-- Gazebo ros control pluggins -->
+
+    
+    <!-- Gazebo skid steering pluggins -->
+    <!-- xacro:skid_steering broadcastOdomTF="1"/ -->
+
+    <!-- Wheels -->
+    <xacro:wheels chassis_width="1.201" wheelbase="1.530"/>
+
+    <!-- *********************************************** -->
+    <!--                 MAIN SENSORS                    -->
+    <!-- *********************************************** -->
+
+    <!--     LOCATIONS: (XYZ)
+    IMU: 0.0 0.0 0.0
+    GPS: 0.463 0.0679 0.224
+    LIDAR: 0.243 0.0 0.324
+    STEREO CAM: 0.334 0.0 0.295 -->
+
+    <xacro:sensor_imu parent="chassis" prefix="imu" topic_prefix="">
+        <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    </xacro:sensor_imu>
+    
+    <xacro:include filename="$(find aamfsd_description)/urdf/ros2/eufs_sensors/urdf/rplidar-A3.urdf.xacro"/>
+	<xacro:rplidar-A3 parent="chassis" name="rplidar" topic="/rplidar_points" hz="40" samples="720">
+        	<origin xyz="0.243 0.0 0.324" rpy="0 ${6.1*M_PI/180.0} 0"/>
+        </xacro:rplidar-A3>
+
+    <xacro:sensor_gps parent="chassis" prefix="gps">
+        <origin xyz="0.463 0.06792 0.224" rpy="0 0 0"/>
+    </xacro:sensor_gps>
+
+    <xacro:VLP-16R parent="chassis" name="velodyne" topic="/velodyne_points" hz="10" samples="800" active="$(arg simulate_perception)">
+	    <origin xyz="0.243 0.0 0.324" rpy="0 ${6.1*M_PI/180.0} 0"/>
+    </xacro:VLP-16R>
+
+    <xacro:zed_camera parent="chassis" prefix="zed" active="$(arg simulate_perception)">
+	    <origin xyz="0.334 0.0 0.295" rpy="0 0 0"/>
+    </xacro:zed_camera>
+
+    <xacro:sensor_imu parent="chassis" prefix="zed_imu" topic_prefix="/camera">
+        <origin xyz="0.334 0.0 0.295" rpy="0 ${10.15*M_PI/180.0} 0"/>
+    </xacro:sensor_imu>
+    
+    <xacro:sensor_magnetometer parent="chassis" prefix="sbg">
+        <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    </xacro:sensor_magnetometer>
+
+
+</robot>
+
+
+
+
+

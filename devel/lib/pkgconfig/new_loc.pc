@@ -1,0 +1,8 @@
+prefix=/home/hazem/Downloads/project/devel
+
+Name: new_loc
+Description: Description of new_loc
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

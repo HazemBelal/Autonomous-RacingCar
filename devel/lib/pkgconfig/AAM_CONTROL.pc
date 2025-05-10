@@ -1,0 +1,8 @@
+prefix=/home/hazem/Downloads/project/devel
+
+Name: AAM_CONTROL
+Description: Description of AAM_CONTROL
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

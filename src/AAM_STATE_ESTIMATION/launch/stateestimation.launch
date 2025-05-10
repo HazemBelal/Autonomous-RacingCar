@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+
+    <node name="stateestimation" pkg="AAM_STATE_ESTIMATION" type="velocity_est_2_imu_accFunc_gssGroundTruth.py" output="screen"/> 
+
+
+</launch>

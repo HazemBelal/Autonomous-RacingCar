@@ -1,0 +1,8 @@
+prefix=/home/hazem/Downloads/project/devel
+
+Name: aam_common_sim
+Description: Description of aam_common_sim
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

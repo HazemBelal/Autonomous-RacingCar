@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+
+    <node name="pathplanning" pkg="AAM_PATH_PLANNING" type="newAccelration.py" output="screen"/> 
+
+
+</launch>

@@ -1,0 +1,8 @@
+prefix=/home/hazem/Downloads/project/install
+
+Name: AAM_STATE_ESTIMATION
+Description: Description of AAM_STATE_ESTIMATION
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
