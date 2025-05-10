@@ -1,0 +1,11 @@
+path: ~/dataset/  # dataset root dir
+train: train/  # train images (relative to 'path')
+val: valid/  # val images (relative to 'path')
+test: test/  # test images  (relative to 'path')
+
+names:
+  0: blue_cone
+  1: large_orange_cone
+  2: orange_cone
+  3: unknown_cone
+  4: yellow_cone
