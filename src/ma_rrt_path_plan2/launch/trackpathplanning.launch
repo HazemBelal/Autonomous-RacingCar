@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Launch the cone map adapter node to subscribe to /camera_cones_marker and publish /map -->
+  <node name="cone_map_adapter" pkg="ma_rrt_path_plan" type="cone_map_adapter.py" output="screen" />
+
+  <!-- Launch the new RRT-based path planning node -->
+  <node name="pathplanning" pkg="ma_rrt_path_plan" type="main.py" output="screen">
+    <param name="desiredWaypointsFrequency" value="5" type="int" />
+    <param name="publishWaypoints" value="true" type="bool" />
+    <!-- Remap the odometry input -->
+    <remap from="/odometry" to="/ground_truth/state_raw"/>
+  </node>
+</launch>

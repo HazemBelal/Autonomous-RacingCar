@@ -224,7 +224,7 @@ def odom_callback(odom):
         v_des = 0.3
     else:
         v_des = math.sqrt(9.81 * 0.3 * (1/k))
-    max_speed = 0.5
+    max_speed = 0.3
     v_des = min(v_des, max_speed)
     new_v_des = v_des - (20/100.0) * v_des
     rospy.loginfo("odom_callback: Raw computed v_des=%.4f, Clamped v_des=%.4f, Adjusted v_des=%.4f",
