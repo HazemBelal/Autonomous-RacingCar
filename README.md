@@ -19,7 +19,7 @@ This repository hosts all code, configurations, and data needed to simulate an a
 * **Path Planning**
 
   * **Description:** Computes a sequence of waypoints for the vehicle to follow.
-  * **Tech Stack:** ROS Python node (`pure_pursuit.py`), `rospy`.
+  * **Tech Stack:** ROS Python node (`ma_rrt_pathplanning.py`), `rospy`.
   * **Key Algorithm:** RRT\* modified for the racing tracks.
 
 * **Control**
