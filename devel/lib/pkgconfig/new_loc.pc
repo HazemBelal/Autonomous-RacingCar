@@ -1,4 +1,4 @@
-prefix=/home/hazem/Downloads/project/devel
+prefix=/home/joe/catkin_ws/devel
 
 Name: new_loc
 Description: Description of new_loc

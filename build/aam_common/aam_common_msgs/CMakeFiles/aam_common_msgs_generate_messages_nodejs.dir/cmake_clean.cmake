@@ -1,13 +1,13 @@
 file(REMOVE_RECURSE
-  "/home/hazem/Downloads/project/devel/share/gennodejs/ros/aam_common_msgs/msg/BoundingBox.js"
-  "/home/hazem/Downloads/project/devel/share/gennodejs/ros/aam_common_msgs/msg/BoundingBoxes.js"
-  "/home/hazem/Downloads/project/devel/share/gennodejs/ros/aam_common_msgs/msg/CarState.js"
-  "/home/hazem/Downloads/project/devel/share/gennodejs/ros/aam_common_msgs/msg/CarStateDt.js"
-  "/home/hazem/Downloads/project/devel/share/gennodejs/ros/aam_common_msgs/msg/Cone.js"
-  "/home/hazem/Downloads/project/devel/share/gennodejs/ros/aam_common_msgs/msg/ConeDetections.js"
-  "/home/hazem/Downloads/project/devel/share/gennodejs/ros/aam_common_msgs/msg/ControlCommand.js"
-  "/home/hazem/Downloads/project/devel/share/gennodejs/ros/aam_common_msgs/msg/Map.js"
-  "/home/hazem/Downloads/project/devel/share/gennodejs/ros/aam_common_msgs/msg/Mission.js"
+  "/home/joe/catkin_ws/devel/share/gennodejs/ros/aam_common_msgs/msg/BoundingBox.js"
+  "/home/joe/catkin_ws/devel/share/gennodejs/ros/aam_common_msgs/msg/BoundingBoxes.js"
+  "/home/joe/catkin_ws/devel/share/gennodejs/ros/aam_common_msgs/msg/CarState.js"
+  "/home/joe/catkin_ws/devel/share/gennodejs/ros/aam_common_msgs/msg/CarStateDt.js"
+  "/home/joe/catkin_ws/devel/share/gennodejs/ros/aam_common_msgs/msg/Cone.js"
+  "/home/joe/catkin_ws/devel/share/gennodejs/ros/aam_common_msgs/msg/ConeDetections.js"
+  "/home/joe/catkin_ws/devel/share/gennodejs/ros/aam_common_msgs/msg/ControlCommand.js"
+  "/home/joe/catkin_ws/devel/share/gennodejs/ros/aam_common_msgs/msg/Map.js"
+  "/home/joe/catkin_ws/devel/share/gennodejs/ros/aam_common_msgs/msg/Mission.js"
   "CMakeFiles/aam_common_msgs_generate_messages_nodejs"
 )
 

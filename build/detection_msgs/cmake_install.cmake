@@ -1,8 +1,8 @@
-# Install script for directory: /home/hazem/Downloads/project/src/detection_msgs
+# Install script for directory: /home/joe/catkin_ws/src/detection_msgs
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/hazem/Downloads/project/install")
+  set(CMAKE_INSTALL_PREFIX "/home/joe/catkin_ws/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -39,55 +39,55 @@ endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/detection_msgs/msg" TYPE FILE FILES
-    "/home/hazem/Downloads/project/src/detection_msgs/msg/BoundingBox.msg"
-    "/home/hazem/Downloads/project/src/detection_msgs/msg/BoundingBoxes.msg"
+    "/home/joe/catkin_ws/src/detection_msgs/msg/BoundingBox.msg"
+    "/home/joe/catkin_ws/src/detection_msgs/msg/BoundingBoxes.msg"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/detection_msgs/cmake" TYPE FILE FILES "/home/hazem/Downloads/project/build/detection_msgs/catkin_generated/installspace/detection_msgs-msg-paths.cmake")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/detection_msgs/cmake" TYPE FILE FILES "/home/joe/catkin_ws/build/detection_msgs/catkin_generated/installspace/detection_msgs-msg-paths.cmake")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "/home/hazem/Downloads/project/devel/include/detection_msgs")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "/home/joe/catkin_ws/devel/include/detection_msgs")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/roseus/ros" TYPE DIRECTORY FILES "/home/hazem/Downloads/project/devel/share/roseus/ros/detection_msgs")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/roseus/ros" TYPE DIRECTORY FILES "/home/joe/catkin_ws/devel/share/roseus/ros/detection_msgs")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/common-lisp/ros" TYPE DIRECTORY FILES "/home/hazem/Downloads/project/devel/share/common-lisp/ros/detection_msgs")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/common-lisp/ros" TYPE DIRECTORY FILES "/home/joe/catkin_ws/devel/share/common-lisp/ros/detection_msgs")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/gennodejs/ros" TYPE DIRECTORY FILES "/home/hazem/Downloads/project/devel/share/gennodejs/ros/detection_msgs")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/gennodejs/ros" TYPE DIRECTORY FILES "/home/joe/catkin_ws/devel/share/gennodejs/ros/detection_msgs")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  execute_process(COMMAND "/usr/bin/python3" -m compileall "/home/hazem/Downloads/project/devel/lib/python3/dist-packages/detection_msgs")
+  execute_process(COMMAND "/usr/bin/python3" -m compileall "/home/joe/catkin_ws/devel/lib/python3/dist-packages/detection_msgs")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/python3/dist-packages" TYPE DIRECTORY FILES "/home/hazem/Downloads/project/devel/lib/python3/dist-packages/detection_msgs")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/python3/dist-packages" TYPE DIRECTORY FILES "/home/joe/catkin_ws/devel/lib/python3/dist-packages/detection_msgs")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/hazem/Downloads/project/build/detection_msgs/catkin_generated/installspace/detection_msgs.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/joe/catkin_ws/build/detection_msgs/catkin_generated/installspace/detection_msgs.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/detection_msgs/cmake" TYPE FILE FILES "/home/hazem/Downloads/project/build/detection_msgs/catkin_generated/installspace/detection_msgs-msg-extras.cmake")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/detection_msgs/cmake" TYPE FILE FILES "/home/joe/catkin_ws/build/detection_msgs/catkin_generated/installspace/detection_msgs-msg-extras.cmake")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/detection_msgs/cmake" TYPE FILE FILES
-    "/home/hazem/Downloads/project/build/detection_msgs/catkin_generated/installspace/detection_msgsConfig.cmake"
-    "/home/hazem/Downloads/project/build/detection_msgs/catkin_generated/installspace/detection_msgsConfig-version.cmake"
+    "/home/joe/catkin_ws/build/detection_msgs/catkin_generated/installspace/detection_msgsConfig.cmake"
+    "/home/joe/catkin_ws/build/detection_msgs/catkin_generated/installspace/detection_msgsConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/detection_msgs" TYPE FILE FILES "/home/hazem/Downloads/project/src/detection_msgs/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/detection_msgs" TYPE FILE FILES "/home/joe/catkin_ws/src/detection_msgs/package.xml")
 endif()
 

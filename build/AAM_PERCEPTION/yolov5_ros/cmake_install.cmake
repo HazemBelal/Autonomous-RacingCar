@@ -1,8 +1,8 @@
-# Install script for directory: /home/hazem/Downloads/project/src/AAM_PERCEPTION/yolov5_ros
+# Install script for directory: /home/joe/catkin_ws/src/AAM_PERCEPTION/yolov5_ros
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/hazem/Downloads/project/install")
+  set(CMAKE_INSTALL_PREFIX "/home/joe/catkin_ws/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -38,21 +38,21 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/hazem/Downloads/project/build/AAM_PERCEPTION/yolov5_ros/catkin_generated/installspace/yolov5_ros.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/joe/catkin_ws/build/AAM_PERCEPTION/yolov5_ros/catkin_generated/installspace/yolov5_ros.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/yolov5_ros/cmake" TYPE FILE FILES
-    "/home/hazem/Downloads/project/build/AAM_PERCEPTION/yolov5_ros/catkin_generated/installspace/yolov5_rosConfig.cmake"
-    "/home/hazem/Downloads/project/build/AAM_PERCEPTION/yolov5_ros/catkin_generated/installspace/yolov5_rosConfig-version.cmake"
+    "/home/joe/catkin_ws/build/AAM_PERCEPTION/yolov5_ros/catkin_generated/installspace/yolov5_rosConfig.cmake"
+    "/home/joe/catkin_ws/build/AAM_PERCEPTION/yolov5_ros/catkin_generated/installspace/yolov5_rosConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/yolov5_ros" TYPE FILE FILES "/home/hazem/Downloads/project/src/AAM_PERCEPTION/yolov5_ros/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/yolov5_ros" TYPE FILE FILES "/home/joe/catkin_ws/src/AAM_PERCEPTION/yolov5_ros/package.xml")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/yolov5_ros" TYPE PROGRAM FILES "/home/hazem/Downloads/project/build/AAM_PERCEPTION/yolov5_ros/catkin_generated/installspace/detect.py")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/yolov5_ros" TYPE PROGRAM FILES "/home/joe/catkin_ws/build/AAM_PERCEPTION/yolov5_ros/catkin_generated/installspace/detect.py")
 endif()
 

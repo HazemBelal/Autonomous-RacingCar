@@ -1,8 +1,8 @@
-# Install script for directory: /home/hazem/Downloads/project/src/AAM_PERCEPTION/lidar_cone_detection
+# Install script for directory: /home/joe/catkin_ws/src/AAM_PERCEPTION/lidar_cone_detection
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/hazem/Downloads/project/install")
+  set(CMAKE_INSTALL_PREFIX "/home/joe/catkin_ws/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -38,36 +38,36 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/hazem/Downloads/project/build/AAM_PERCEPTION/lidar_cone_detection/catkin_generated/installspace/lidar_cone_detection.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/joe/catkin_ws/build/AAM_PERCEPTION/lidar_cone_detection/catkin_generated/installspace/lidar_cone_detection.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lidar_cone_detection/cmake" TYPE FILE FILES
-    "/home/hazem/Downloads/project/build/AAM_PERCEPTION/lidar_cone_detection/catkin_generated/installspace/lidar_cone_detectionConfig.cmake"
-    "/home/hazem/Downloads/project/build/AAM_PERCEPTION/lidar_cone_detection/catkin_generated/installspace/lidar_cone_detectionConfig-version.cmake"
+    "/home/joe/catkin_ws/build/AAM_PERCEPTION/lidar_cone_detection/catkin_generated/installspace/lidar_cone_detectionConfig.cmake"
+    "/home/joe/catkin_ws/build/AAM_PERCEPTION/lidar_cone_detection/catkin_generated/installspace/lidar_cone_detectionConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lidar_cone_detection" TYPE FILE FILES "/home/hazem/Downloads/project/src/AAM_PERCEPTION/lidar_cone_detection/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lidar_cone_detection" TYPE FILE FILES "/home/joe/catkin_ws/src/AAM_PERCEPTION/lidar_cone_detection/package.xml")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/hazem/Downloads/project/build/AAM_PERCEPTION/lidar_cone_detection/catkin_generated/installspace/lidar_cone_detection.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/joe/catkin_ws/build/AAM_PERCEPTION/lidar_cone_detection/catkin_generated/installspace/lidar_cone_detection.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lidar_cone_detection/cmake" TYPE FILE FILES
-    "/home/hazem/Downloads/project/build/AAM_PERCEPTION/lidar_cone_detection/catkin_generated/installspace/lidar_cone_detectionConfig.cmake"
-    "/home/hazem/Downloads/project/build/AAM_PERCEPTION/lidar_cone_detection/catkin_generated/installspace/lidar_cone_detectionConfig-version.cmake"
+    "/home/joe/catkin_ws/build/AAM_PERCEPTION/lidar_cone_detection/catkin_generated/installspace/lidar_cone_detectionConfig.cmake"
+    "/home/joe/catkin_ws/build/AAM_PERCEPTION/lidar_cone_detection/catkin_generated/installspace/lidar_cone_detectionConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lidar_cone_detection" TYPE FILE FILES "/home/hazem/Downloads/project/src/AAM_PERCEPTION/lidar_cone_detection/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lidar_cone_detection" TYPE FILE FILES "/home/joe/catkin_ws/src/AAM_PERCEPTION/lidar_cone_detection/package.xml")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/lidar_cone_detection" TYPE PROGRAM FILES "/home/hazem/Downloads/project/build/AAM_PERCEPTION/lidar_cone_detection/catkin_generated/installspace/lidar_cone_centroid.py")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/lidar_cone_detection" TYPE PROGRAM FILES "/home/joe/catkin_ws/build/AAM_PERCEPTION/lidar_cone_detection/catkin_generated/installspace/lidar_cone_centroid.py")
 endif()
 

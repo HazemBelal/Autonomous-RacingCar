@@ -1,4 +1,4 @@
-prefix=/home/hazem/Downloads/project/devel
+prefix=/home/joe/catkin_ws/devel
 
 Name: AAM_PATH_PLANNING
 Description: Description of AAM_PATH_PLANNING

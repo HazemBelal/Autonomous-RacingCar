@@ -1,4 +1,4 @@
-prefix=/home/hazem/Downloads/project/devel
+prefix=/home/joe/catkin_ws/devel
 
 Name: camera_cone_detection
 Description: Description of camera_cone_detection

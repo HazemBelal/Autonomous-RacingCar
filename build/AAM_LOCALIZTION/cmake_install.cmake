@@ -1,8 +1,8 @@
-# Install script for directory: /home/hazem/Downloads/project/src/AAM_LOCALIZTION
+# Install script for directory: /home/joe/catkin_ws/src/AAM_LOCALIZTION
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/hazem/Downloads/project/install")
+  set(CMAKE_INSTALL_PREFIX "/home/joe/catkin_ws/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -38,17 +38,17 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/hazem/Downloads/project/build/AAM_LOCALIZTION/catkin_generated/installspace/AAM_LOCALIZTION.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/joe/catkin_ws/build/AAM_LOCALIZTION/catkin_generated/installspace/AAM_LOCALIZTION.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/AAM_LOCALIZTION/cmake" TYPE FILE FILES
-    "/home/hazem/Downloads/project/build/AAM_LOCALIZTION/catkin_generated/installspace/AAM_LOCALIZTIONConfig.cmake"
-    "/home/hazem/Downloads/project/build/AAM_LOCALIZTION/catkin_generated/installspace/AAM_LOCALIZTIONConfig-version.cmake"
+    "/home/joe/catkin_ws/build/AAM_LOCALIZTION/catkin_generated/installspace/AAM_LOCALIZTIONConfig.cmake"
+    "/home/joe/catkin_ws/build/AAM_LOCALIZTION/catkin_generated/installspace/AAM_LOCALIZTIONConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/AAM_LOCALIZTION" TYPE FILE FILES "/home/hazem/Downloads/project/src/AAM_LOCALIZTION/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/AAM_LOCALIZTION" TYPE FILE FILES "/home/joe/catkin_ws/src/AAM_LOCALIZTION/package.xml")
 endif()
 

@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/hazem/Downloads/project/src
+CMAKE_SOURCE_DIR = /home/joe/catkin_ws/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/hazem/Downloads/project/build
+CMAKE_BINARY_DIR = /home/joe/catkin_ws/build
 
 # Utility rule file for std_msgs_generate_messages_eus.
 
@@ -63,10 +63,10 @@ detection_msgs/CMakeFiles/std_msgs_generate_messages_eus.dir/build: std_msgs_gen
 .PHONY : detection_msgs/CMakeFiles/std_msgs_generate_messages_eus.dir/build
 
 detection_msgs/CMakeFiles/std_msgs_generate_messages_eus.dir/clean:
-	cd /home/hazem/Downloads/project/build/detection_msgs && $(CMAKE_COMMAND) -P CMakeFiles/std_msgs_generate_messages_eus.dir/cmake_clean.cmake
+	cd /home/joe/catkin_ws/build/detection_msgs && $(CMAKE_COMMAND) -P CMakeFiles/std_msgs_generate_messages_eus.dir/cmake_clean.cmake
 .PHONY : detection_msgs/CMakeFiles/std_msgs_generate_messages_eus.dir/clean
 
 detection_msgs/CMakeFiles/std_msgs_generate_messages_eus.dir/depend:
-	cd /home/hazem/Downloads/project/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/hazem/Downloads/project/src /home/hazem/Downloads/project/src/detection_msgs /home/hazem/Downloads/project/build /home/hazem/Downloads/project/build/detection_msgs /home/hazem/Downloads/project/build/detection_msgs/CMakeFiles/std_msgs_generate_messages_eus.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/joe/catkin_ws/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/joe/catkin_ws/src /home/joe/catkin_ws/src/detection_msgs /home/joe/catkin_ws/build /home/joe/catkin_ws/build/detection_msgs /home/joe/catkin_ws/build/detection_msgs/CMakeFiles/std_msgs_generate_messages_eus.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : detection_msgs/CMakeFiles/std_msgs_generate_messages_eus.dir/depend
 

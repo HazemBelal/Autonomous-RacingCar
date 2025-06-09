@@ -1,6 +1,6 @@
 # CMake generated Testfile for 
-# Source directory: /home/hazem/Downloads/project/src
-# Build directory: /home/hazem/Downloads/project/build
+# Source directory: /home/joe/catkin_ws/src
+# Build directory: /home/joe/catkin_ws/build
 # 
 # This file includes the relevant testing commands required for 
 # testing this directory and lists subdirectories to be tested as well.
@@ -15,6 +15,7 @@ subdirs("LAUNCH")
 subdirs("PLUGINS")
 subdirs("aam_common/aam_common_msgs")
 subdirs("ma_rrt_path_plan")
+subdirs("mpc_control")
 subdirs("AAM_PERCEPTION/lidar_cone_detection")
 subdirs("AAM_PERCEPTION/new_loc")
 subdirs("AAM_PERCEPTION/camera_cone_detection")

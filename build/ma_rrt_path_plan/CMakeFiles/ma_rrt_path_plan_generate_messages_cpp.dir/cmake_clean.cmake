@@ -1,6 +1,7 @@
 file(REMOVE_RECURSE
-  "/home/hazem/Downloads/project/devel/include/ma_rrt_path_plan/Waypoint.h"
-  "/home/hazem/Downloads/project/devel/include/ma_rrt_path_plan/WaypointsArray.h"
+  "/home/joe/catkin_ws/devel/include/ma_rrt_path_plan/Map.h"
+  "/home/joe/catkin_ws/devel/include/ma_rrt_path_plan/Waypoint.h"
+  "/home/joe/catkin_ws/devel/include/ma_rrt_path_plan/WaypointsArray.h"
   "CMakeFiles/ma_rrt_path_plan_generate_messages_cpp"
 )
 

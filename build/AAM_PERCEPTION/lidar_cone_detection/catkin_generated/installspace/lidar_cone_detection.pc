@@ -1,4 +1,4 @@
-prefix=/home/hazem/Downloads/project/install
+prefix=/home/joe/catkin_ws/install
 
 Name: lidar_cone_detection
 Description: Description of lidar_cone_detection

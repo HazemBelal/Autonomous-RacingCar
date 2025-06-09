@@ -1,4 +1,4 @@
-prefix=/home/hazem/Downloads/project/install
+prefix=/home/joe/catkin_ws/install
 
 Name: aam_common_msgs
 Description: Description of aam_common_msgs

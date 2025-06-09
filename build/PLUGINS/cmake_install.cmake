@@ -1,8 +1,8 @@
-# Install script for directory: /home/hazem/Downloads/project/src/PLUGINS
+# Install script for directory: /home/joe/catkin_ws/src/PLUGINS
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/hazem/Downloads/project/install")
+  set(CMAKE_INSTALL_PREFIX "/home/joe/catkin_ws/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -38,17 +38,17 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/hazem/Downloads/project/build/PLUGINS/catkin_generated/installspace/PLUGINS.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/joe/catkin_ws/build/PLUGINS/catkin_generated/installspace/PLUGINS.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/PLUGINS/cmake" TYPE FILE FILES
-    "/home/hazem/Downloads/project/build/PLUGINS/catkin_generated/installspace/PLUGINSConfig.cmake"
-    "/home/hazem/Downloads/project/build/PLUGINS/catkin_generated/installspace/PLUGINSConfig-version.cmake"
+    "/home/joe/catkin_ws/build/PLUGINS/catkin_generated/installspace/PLUGINSConfig.cmake"
+    "/home/joe/catkin_ws/build/PLUGINS/catkin_generated/installspace/PLUGINSConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/PLUGINS" TYPE FILE FILES "/home/hazem/Downloads/project/src/PLUGINS/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/PLUGINS" TYPE FILE FILES "/home/joe/catkin_ws/src/PLUGINS/package.xml")
 endif()
 

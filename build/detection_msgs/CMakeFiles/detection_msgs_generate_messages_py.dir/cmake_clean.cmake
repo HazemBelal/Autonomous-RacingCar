@@ -1,7 +1,7 @@
 file(REMOVE_RECURSE
-  "/home/hazem/Downloads/project/devel/lib/python3/dist-packages/detection_msgs/msg/_BoundingBox.py"
-  "/home/hazem/Downloads/project/devel/lib/python3/dist-packages/detection_msgs/msg/_BoundingBoxes.py"
-  "/home/hazem/Downloads/project/devel/lib/python3/dist-packages/detection_msgs/msg/__init__.py"
+  "/home/joe/catkin_ws/devel/lib/python3/dist-packages/detection_msgs/msg/_BoundingBox.py"
+  "/home/joe/catkin_ws/devel/lib/python3/dist-packages/detection_msgs/msg/_BoundingBoxes.py"
+  "/home/joe/catkin_ws/devel/lib/python3/dist-packages/detection_msgs/msg/__init__.py"
   "CMakeFiles/detection_msgs_generate_messages_py"
 )
 

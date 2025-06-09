@@ -1,0 +1,8 @@
+prefix=/home/joe/catkin_ws/devel
+
+Name: mpc_control
+Description: Description of mpc_control
+Version: 0.1.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: roscpp ackermann_msgs ma_rrt_path_plan message_runtime

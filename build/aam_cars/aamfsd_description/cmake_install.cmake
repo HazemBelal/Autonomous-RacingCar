@@ -1,8 +1,8 @@
-# Install script for directory: /home/hazem/Downloads/project/src/aam_cars/aamfsd_description
+# Install script for directory: /home/joe/catkin_ws/src/aam_cars/aamfsd_description
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/hazem/Downloads/project/install")
+  set(CMAKE_INSTALL_PREFIX "/home/joe/catkin_ws/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -38,24 +38,24 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/hazem/Downloads/project/build/aam_cars/aamfsd_description/catkin_generated/installspace/aamfsd_description.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/joe/catkin_ws/build/aam_cars/aamfsd_description/catkin_generated/installspace/aamfsd_description.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/aamfsd_description/cmake" TYPE FILE FILES
-    "/home/hazem/Downloads/project/build/aam_cars/aamfsd_description/catkin_generated/installspace/aamfsd_descriptionConfig.cmake"
-    "/home/hazem/Downloads/project/build/aam_cars/aamfsd_description/catkin_generated/installspace/aamfsd_descriptionConfig-version.cmake"
+    "/home/joe/catkin_ws/build/aam_cars/aamfsd_description/catkin_generated/installspace/aamfsd_descriptionConfig.cmake"
+    "/home/joe/catkin_ws/build/aam_cars/aamfsd_description/catkin_generated/installspace/aamfsd_descriptionConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/aamfsd_description" TYPE FILE FILES "/home/hazem/Downloads/project/src/aam_cars/aamfsd_description/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/aamfsd_description" TYPE FILE FILES "/home/joe/catkin_ws/src/aam_cars/aamfsd_description/package.xml")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/aamfsd_description" TYPE DIRECTORY FILES
-    "/home/hazem/Downloads/project/src/aam_cars/aamfsd_description/meshes"
-    "/home/hazem/Downloads/project/src/aam_cars/aamfsd_description/urdf"
+    "/home/joe/catkin_ws/src/aam_cars/aamfsd_description/meshes"
+    "/home/joe/catkin_ws/src/aam_cars/aamfsd_description/urdf"
     )
 endif()
 

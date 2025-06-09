@@ -1,8 +1,8 @@
-# Install script for directory: /home/hazem/Downloads/project/src/aam_cars/robot_control
+# Install script for directory: /home/joe/catkin_ws/src/aam_cars/robot_control
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/hazem/Downloads/project/install")
+  set(CMAKE_INSTALL_PREFIX "/home/joe/catkin_ws/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -38,17 +38,17 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/hazem/Downloads/project/build/aam_cars/robot_control/catkin_generated/installspace/robot_control.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/joe/catkin_ws/build/aam_cars/robot_control/catkin_generated/installspace/robot_control.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/robot_control/cmake" TYPE FILE FILES
-    "/home/hazem/Downloads/project/build/aam_cars/robot_control/catkin_generated/installspace/robot_controlConfig.cmake"
-    "/home/hazem/Downloads/project/build/aam_cars/robot_control/catkin_generated/installspace/robot_controlConfig-version.cmake"
+    "/home/joe/catkin_ws/build/aam_cars/robot_control/catkin_generated/installspace/robot_controlConfig.cmake"
+    "/home/joe/catkin_ws/build/aam_cars/robot_control/catkin_generated/installspace/robot_controlConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/robot_control" TYPE FILE FILES "/home/hazem/Downloads/project/src/aam_cars/robot_control/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/robot_control" TYPE FILE FILES "/home/joe/catkin_ws/src/aam_cars/robot_control/package.xml")
 endif()
 
