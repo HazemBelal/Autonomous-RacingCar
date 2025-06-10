@@ -1,6 +1,4 @@
 build/
 devel/
-install/
-
-build/
-devel/
+src/ma_rrt_path_plan/src/__pycache__/ma_rrt.cpython-38.pyc
+src/ma_rrt_path_plan/src/__pycache__/MaRRTPathPlanNode.cpython-38.pyc

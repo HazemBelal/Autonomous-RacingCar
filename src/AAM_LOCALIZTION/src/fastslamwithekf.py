@@ -61,7 +61,7 @@ class fastslam:
         self.currenttime=rospy.Time.now().to_sec()
         self. path_msg = Path()       
         self. path_msg.header.stamp = rospy.Time.now()
-        self.path_msg.header.frame_id = 'odom'
+        self.path_msg.header.frame_id = 'map'
         self.currentconeid=0
         self.timefromlast=rospy.Time.now().to_sec()
         self.ans=0
@@ -70,7 +70,12 @@ class fastslam:
         rospy.Subscriber('/waypoints', WaypointsArray, self.waypoints_callback)
 
         self.commandcontrol_sub = rospy.Subscriber("vel_ekf",Float32MultiArray, self.control_callback)
-        self.path_publisher = rospy.Publisher('/robot_path', Path, queue_size=10)
+        
+        self.path_publisher = rospy.Publisher(
+            '/robot_path', Path,
+            queue_size=10,
+            latch=True              # ← hold the last Path forever
+        )
         
         self.pc_pub = rospy.Publisher("cone_loc", MarkerArray, queue_size=1)
         self.testcone=rospy.Publisher("/test", MarkerArray, queue_size=1)
