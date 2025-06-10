@@ -38,14 +38,7 @@ from geometry_msgs.msg import PoseStamped
 from ma_rrt_path_plan.msg import WaypointsArray
 import osqp
 from scipy import sparse
-from collections import deque
 
-SMOOTH_N = 5                     # number of waypoint sets to average
-waypoint_history = deque(maxlen=SMOOTH_N)
-PREVIEW_N = 5                    # how many smoothed points to preview
-preview_weights = [i+1 for i in range(PREVIEW_N)]
-CONTROL_DT = 0.1                 # your 10 Hz timer dt
-prev_v_des = 0.0                 # for velocity feed-forward
 error = 0
 ref_waypoints = []
 steering_ang = 0.0
@@ -232,130 +225,120 @@ def waypoints_callback(wp):
     robot_control_pub.publish(SA)
     rospy.loginfo("Published control: speed=%.2f, steering_angle=%.2f", vel, steering_ang)
 '''
-
-def smooth_waypoints(raw_pts):
-    """
-    Maintain a short history of raw waypoint lists and
-    return an element-wise average.
-    """
-    waypoint_history.append(raw_pts)
-    smoothed = []
-    for i in range(len(raw_pts)):
-        xs = [h[i][0] for h in waypoint_history if len(h)>i]
-        ys = [h[i][1] for h in waypoint_history if len(h)>i]
-        smoothed.append((sum(xs)/len(xs), sum(ys)/len(ys)))
-    return smoothed
-
 def waypoints_callback(wp_msg):
     """
-    waypoints_callback with:
-      - dynamic speed clamp based on curvature
-      - stronger cross-track gain for tight turns
-      - non-zero yaw feedback from IMU
-      - full component logging
+    Updated waypoints_callback with a guard so that we only print ref_waypoints[0..2]
+    when there are at least three points in the list.
     """
-    global ref_waypoints, steering_ang, k, last_waypoint_vel, vehicle_state
+    global ref_waypoints, steering_ang, k, last_waypoint_vel
 
-    # 1) Pull raw waypoints
-    raw = [(wp.x, wp.y) for wp in wp_msg.waypoints]
-    n_raw = len(raw)
-    rospy.loginfo("+++ waypoints_callback: received %d raw points", n_raw)
-    if n_raw == 0:
-        ref_waypoints.clear()
+    # 1) Clear and refill ref_waypoints with (x, y) from wp_msg.waypoints
+    ref_waypoints.clear()
+    for waypoint in wp_msg.waypoints:
+        ref_waypoints.append((waypoint.x, waypoint.y))
+    rospy.loginfo("+++ waypoints_callback triggered, %d points", len(ref_waypoints))
+
+    # Only print ref_waypoints[0..2] if there are at least 3 points
+    if len(ref_waypoints) >= 3:
+        rospy.loginfo(
+            "   ref_waypoints[0..2] = %s, %s, %s",
+            ref_waypoints[0], ref_waypoints[1], ref_waypoints[2]
+        )
+
+    # If no waypoints, bail out
+    if not ref_waypoints:
+        rospy.logwarn("waypoints_callback: No waypoints available")
         return
 
+    # 2) Extract x_points and y_points for curvature, target finding, etc.
+    x_points = [pt[0] for pt in ref_waypoints]
+    y_points = [pt[1] for pt in ref_waypoints]
 
-    # 2) Smooth them
-    ref_waypoints[:] = smooth_waypoints(raw)
-    n = len(ref_waypoints)
-    rospy.loginfo("    smoothed to %d points", n)
-    if n >= 3:
-        rospy.loginfo("    smoothed[0..2] = %s, %s, %s",
-                      ref_waypoints[0], ref_waypoints[1], ref_waypoints[2])
+    size_array = len(x_points)
+    x_target = x_points[0] + 0.7675
+    y_target = y_points[0]
 
-
-    M = min(PREVIEW_N, n)
-    headings = [math.atan2(ref_waypoints[i][1], ref_waypoints[i][0])
-                for i in range(M)]
-    wsum = sum(preview_weights[:M])
-    heading_ref = sum(w*h for w,h in zip(preview_weights, headings)) / wsum
-    rospy.loginfo("    preview headings[0..%d]=%s → heading_ref=%.3f",
-                  M-1, [f"{h:.3f}" for h in headings], heading_ref)
-
-    # 3) Split into x/y lists
-    x_pts = [p[0] for p in ref_waypoints]
-    y_pts = [p[1] for p in ref_waypoints]
-
-    # 4) Pick a target point at ≥3.3m (fallback to index 1)
-    x_t, y_t = x_pts[0] + 0.7675, y_pts[0]
-    found, skips, i = False, 0, 0
-    while not found and i < n and skips < 4:
-        if math.hypot(x_pts[i], y_pts[i]) >= 3.3:
-            x_t, y_t = x_pts[i] + 0.7675, y_pts[i]
+    # 3) Find the first waypoint at least 3.3 m away from (0,0)
+    found = False
+    skip_count = 0
+    i = 0
+    while not found and i < size_array:
+        dist = math.hypot(x_points[i], y_points[i])
+        if dist >= 3.3:
+            x_target = x_points[i] + 0.7675
+            y_target = y_points[i]
             found = True
         else:
-            i += 1; skips += 1
-    if not found and n > 1:
-        x_t, y_t = x_pts[1] + 0.7675, y_pts[1]
-    rospy.loginfo("   target = (%.2f, %.2f)", x_t, y_t)
+            i += 1
+            skip_count += 1
+            if skip_count > 3:
+                break
 
-    # 5) Heading reference
-    heading_ref = math.atan2(y_t, x_t)
-    rospy.loginfo("   heading_ref = %.3f rad", heading_ref)
+    # 4) If none ≥ 3.3 m was found, fallback to index 1 (if it exists)
+    if not found and size_array > 1:
+        x_target = x_points[1] + 0.7675
+        y_target = y_points[1]
 
-    # 6) Curvature + dynamic speed clamp
+    rospy.loginfo(
+        "waypoints_callback: Target point chosen = (%.2f, %.2f)",
+        x_target, y_target
+    )
+
+    # 5) Compute reference heading angle to that target point
+    heading_angle_ref = math.atan2(y_target, x_target)
+    rospy.loginfo(
+        "waypoints_callback: Heading angle ref = %.3f rad",
+        heading_angle_ref
+    )
+
+    # 6) Compute curvature k over all waypoints
     try:
-        k = calculate_curvature(x_pts, y_pts)
+        k = calculate_curvature(x_points, y_points)
     except Exception as e:
-        rospy.logwarn("   curvature error: %s", e)
+        rospy.logwarn("waypoints_callback: Error calculating curvature: %s", e)
         k = 1.0
-    rospy.loginfo("   curvature k = %.4f", k)
+    rospy.loginfo("waypoints_callback: Curvature k = %.6f", k)
 
-    # dynamic max speed: faster on straights, slower on bends
-    if k < 0.02:
-        max_speed = 0.6
-    elif k < 0.05:
-        max_speed = 0.4
-    else:
-        max_speed = 0.25
-
-    vel = min(Another_speed(k), max_speed)
+    # 7) Compute vel from curvature and clamp if desired
+    vel = Another_speed(k)
+    # Example clamp (uncomment if you want to enforce max speed):
+    # vel = min(vel, 0.3)
     last_waypoint_vel = vel
-    rospy.loginfo("   v_des(clamped) = %.3f (→ max %.2f)", vel, max_speed)
+    rospy.loginfo("waypoints_callback: Computed vel = %.3f", vel)
 
-    # 7) Steering components
-    ec = y_t                        # cross-track error
-    # Gains
+    # 8) Compute cross‐track error (assuming car at origin)
+    ec = y_target
     k_soft = 3.0
-    # boost cross-track gain for tight turns
-    if k > 0.1:
-        gain_cte = 2.0
+    kd_yaw = 0.0159375
+    kss = 120.0 / (2 * 10000)
+
+    # 9) If v_act hasn’t been set yet, assume a nominal speed (5 m/s) for steering calc
+    if vehicle_state.v == 0.0:
+        v_act_local = 5.0
     else:
-        gain_cte = 0.5
-    # reduced feed-forward weight
-    kss = 0.005
-    # stronger yaw-feedback
-    kd_yaw = 0.1
+        v_act_local = vehicle_state.v
 
-    # 8) Vehicle state
-    v_act = vehicle_state.v if vehicle_state.v > 0 else 0.1
-    yaw_rate = angvel if 'angvel' in globals() else 0.0
+    # 10) No yaw rate from IMU here
+    yaw_rate_local = 0.0
 
-    # 9) Compute terms
-    ff = -kss * (v_act**2) * k
-    xt = math.atan((gain_cte * ec) / (k_soft + v_act))
-    yf = kd_yaw * (yaw_rate - (v_act * k))
+    # 11) Compute the “hybrid” steering angle
+    try:
+        steering_ang = (
+            (heading_angle_ref - kss * (v_act_local ** 2) * k)
+            + math.atan((0.3 * ec) / (k_soft + v_act_local))
+            + kd_yaw * (yaw_rate_local - (v_act_local * k))
+        )
+    except Exception as e:
+        rospy.logwarn("waypoints_callback: Error computing steering angle: %s", e)
+        steering_ang = 0.0
 
-    rospy.loginfo("   terms → ff=%.3f, xt=%.3f, yaw_fb=%.3f",
-                  ff, xt, yf)
+    rospy.loginfo(
+        "waypoints_callback: Computed steering_ang = %.3f rad",
+        steering_ang
+    )
 
-    # 10) Final steering
-    steering_ang = heading_ref + ff + xt + yf
-    rospy.loginfo("   steering_ang = %.3f rad", steering_ang)
-
-    # done: control_timer_callback will publish (steering_ang, last_waypoint_vel)
+    # 12) Return without publishing; control_timer_callback will handle that
     return
-
 
 '''
 def imu_callback(data):
@@ -519,67 +502,47 @@ def listner():
 
 def control_timer_callback(event):
     """
-    10 Hz loop that:
-      • Feeds in the Stage 3 velocity FF + PID
-      • Computes a proper look‐ahead heading
-      • Adds your Stage 2 cross-track & curvature FF & yaw‐FB
-      • Publishes a single AckermannDriveStamped
+    Periodic control loop (e.g. at 10 Hz) that:
+      1. Checks if any waypoints have been received.
+      2. Uses the last computed steering_ang (from waypoints_callback).
+      3. Uses last_waypoint_vel (from waypoints_callback) as desired speed.
+      4. Runs the PID to compute a final speed command.
+      5. Publishes a single AckermannDriveStamped with steering and speed.
     """
-    global prev_v_des, ref_waypoints, last_waypoint_vel
-    global vehicle_state, robot_control_pub
+    global ref_waypoints, steering_ang, last_waypoint_vel, vehicle_state, robot_control_pub
 
+    # 1) Verify that at least one waypoint has been processed
     if not ref_waypoints:
-        rospy.logwarn("control_timer: no waypoints, skipping")
+        rospy.logwarn("control_timer_callback: No waypoints available, skipping control.")
         return
 
-    # — Velocity feed-forward + PID speed — 
+    # 2) Desired speed is the velocity computed in waypoints_callback
     v_des = last_waypoint_vel
-    v_act = vehicle_state.v
 
-    a_des = (v_des - prev_v_des) / CONTROL_DT
-    ff_speed = v_act + a_des * CONTROL_DT
-    prev_v_des = v_des
+    # 3) Current actual speed from vehicle_state (updated in odom_callback)
+    v_act_local = vehicle_state.v
 
-    u_pid = pid(v_act, v_des)
-    speed_cmd = ff_speed + u_pid * 0.7
+    # 4) Compute PID output and scale down by 0.7
+    final_speed = pid(v_act_local, v_des)
+    mini_final_speed = final_speed * (1.0 - 0.7)
 
-    # — Preview heading — 
-    N = min(PREVIEW_N, len(ref_waypoints))
-    headings = [math.atan2(ref_waypoints[i][1], ref_waypoints[i][0])
-                for i in range(N)]
-    w = preview_weights[:N]
-    heading_ref = sum(w_i * h for w_i, h in zip(w, headings)) / sum(w)
+    rospy.loginfo(
+        "control_timer_callback: v_act=%.4f, v_des=%.4f, PID output=%.4f, mini_final=%.4f",
+        v_act_local, v_des, final_speed, mini_final_speed
+    )
 
-    # — Stage 2 cross-track & curvature FF & yaw-FB — 
-    # (recompute or reuse your globals from waypoints_callback)
-    ec = ref_waypoints[0][1]   # y_target
-    k_soft = 3.0
-    # boost cross-track gain on tight turns
-    gain_cte = 2.0 if k > 0.1 else 0.5
-    kss = 0.005
-    kd_yaw = 0.1
-    v_local = max(v_act, 0.1)
-    yaw_rate = globals().get('angvel', 0.0)
-
-    ff_term = -kss * (v_local**2) * k
-    xt_term = math.atan((gain_cte * ec) / (k_soft + v_local))
-    yaw_fb = kd_yaw * (yaw_rate - (v_local * k))
-
-    final_steering = heading_ref + ff_term + xt_term + yaw_fb
-
-    # — Publish — 
+    # 5) Publish the drive command
     cmd = AckermannDriveStamped()
-    cmd.drive.steering_angle = final_steering
-    cmd.drive.speed = speed_cmd
+    cmd.drive.steering_angle = steering_ang
+    cmd.drive.speed = mini_final_speed
     cmd.drive.steering_angle_velocity = 0.0
     cmd.drive.acceleration = 0.0
     cmd.drive.jerk = 0.0
     robot_control_pub.publish(cmd)
 
     rospy.loginfo(
-      "control_timer → speed=%.3f, steer=%.3f (preview=%.3f, ff=%.3f, xt=%.3f, yf=%.3f)",
-      speed_cmd, final_steering,
-      heading_ref, ff_term, xt_term, yaw_fb
+        "control_timer_callback: Published command → speed=%.4f, steering=%.4f",
+        mini_final_speed, steering_ang
     )
 
 

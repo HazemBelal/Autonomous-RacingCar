@@ -352,8 +352,8 @@ class MaRRTPathPlanNode:
         return waypoints
 
     def getDelaunayEdges(self, frontCones):
-        if len(frontCones) < 4: # no sense to calculate delaunay
-            return
+        if len(frontCones) < 4:  # not enough points for triangulation
+            return []
 
         conePoints = np.zeros((len(frontCones), 2))
 
