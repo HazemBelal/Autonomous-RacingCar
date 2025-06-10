@@ -1,8 +1,0 @@
-prefix=/home/hazem/Downloads/project/install
-
-Name: robot_control
-Description: Description of robot_control
-Version: 1.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: ackermann_msgs

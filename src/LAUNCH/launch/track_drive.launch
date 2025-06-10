@@ -4,17 +4,41 @@
   <include file="$(find yolov5_ros)/launch/yolov5.launch" />
 
   <!-- Delay before launching the camera cone detection -->
-  <node name="delay_launch_2" pkg="LAUNCH" type="delay_launch.py" args="4 $(find camera_cone_detection)/launch/cameranewapproach.launch" output="screen" />
+  <node name="delay_launch_2"
+        pkg="LAUNCH"
+        type="delay_launch.py"
+        args="4 $(find camera_cone_detection)/launch/cameranewapproach.launch"
+        output="screen" />
 
   <!-- Delay before launching the new path planning node (which now includes the adapter) -->
-  <node name="delay_launch_3" pkg="LAUNCH" type="delay_launch.py" args="8 $(find ma_rrt_path_plan)/launch/trackpathplanning.launch" output="screen" />
+  <node name="delay_launch_3"
+        pkg="LAUNCH"
+        type="delay_launch.py"
+        args="8 $(find ma_rrt_path_plan)/launch/trackpathplanning.launch"
+        output="screen" />
 
   <!-- State Estimation -->
   <include file="$(find AAM_STATE_ESTIMATION)/launch/stateestimation.launch" />
 
   <!-- Delay launch for Localization -->
-  <node name="delay_launch_4" pkg="LAUNCH" type="delay_launch.py" args="1 $(find AAM_LOCALIZTION)/launch/localization.launch" output="screen" />
+  <node name="delay_launch_4"
+        pkg="LAUNCH"
+        type="delay_launch.py"
+        args="1 $(find AAM_LOCALIZTION)/launch/localization.launch"
+        output="screen" />
 
   <!-- Delay launch for Track Control -->
-  <node name="delay_launch_5" pkg="LAUNCH" type="delay_launch.py" args="12 $(find AAM_CONTROL)/launch/trackcontrol.launch" output="screen" />
+  <node name="delay_launch_5"
+        pkg="LAUNCH"
+        type="delay_launch.py"
+        args="12 $(find AAM_CONTROL)/launch/trackcontrol.launch"
+        output="screen" />
+      
+  <!-- MPC controller (uncomment to disable) 
+  <node name="mpc_node" pkg="mpc_control" type="mpc_node" output="screen">
+    <param name="control_rate" value="20.0"/>
+    <remap from="/robot_control/command" to="/ackermann_cmd"/>
+  </node>
+  -->
+
 </launch>

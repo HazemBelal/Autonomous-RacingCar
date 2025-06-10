@@ -1,8 +1,0 @@
-prefix=/home/hazem/Downloads/project/devel
-
-Name: LAUNCH
-Description: Description of LAUNCH
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

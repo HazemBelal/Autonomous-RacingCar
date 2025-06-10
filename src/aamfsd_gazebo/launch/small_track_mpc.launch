@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<launch>
+<!-- roslaunch arguments -->
+  <env name="GAZEBO_MODEL_PATH" value="$(find aamfsd_description)"/>
+  <env name="GAZEBO_RESOURCE_PATH" value="$(find aamfsd_description)"/>
+  <arg name="namespace" default="aamfsd"/>
+  <arg name="debug" default="false"/>
+  <arg name="gui" default="true"/>
+  <arg name="cmd_timeout" default="0.5"/>
+  
+  <!-- Vehicle pose -->
+  <arg name="x" default="-15.0"/>
+  <arg name="y" default="14.4"/>
+  <arg name="z" default="0.1"/>
+  <arg name="roll" default="0.0"/>
+  <arg name="pitch" default="0.0"/>
+  <arg name="yaw" default="0.0"/>
+
+    <include file="$(find aamfsd_gazebo)/launch/aamfsd_control.launch"/>
+
+  <!-- ======================================================= -->
+  <!-- 1) Launch Gazebo with small_track.world                -->
+  <!-- ======================================================= -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name"   value="$(find aamfsd_gazebo)/worlds/small_track.world"/>
+    <arg name="gui"          value="true"/>
+    <arg name="paused"       value="false"/>
+    <arg name="use_sim_time" value="true"/>   <!-- Required for MPC’s timers -->
+    <arg name="headless"     value="false"/>
+  </include>
+
+  <!-- ======================================================= -->
+  <!-- 2) Load URDF into ROS param server                     -->
+  <!-- ======================================================= -->
+  <param 
+    command="$(find xacro)/xacro '$(find aamfsd_gazebo)/robots/aamfsd-dv.urdf.xacro' --inorder"
+    name="robot_description"
+  />
+
+  <!-- ======================================================= -->
+  <!-- 3) Spawn URDF in Gazebo                                -->
+  <!-- ======================================================= -->
+  <node name="urdf_spawner"
+        pkg="gazebo_ros"
+        type="spawn_model"
+        output="screen"
+        args="-urdf -model aamfsd -param robot_description 
+              -x 0 -y 0 -z 0.1 
+              -R 0 -P 0 -Y 0"/>
+  <!-- Adjust the -x/-y/-z/-R/-P/-Y if you want a different start pose -->
+
+  <!-- ======================================================= -->
+  <!-- 4) Include robot_control.launch (drives /ackermann_cmd) -->
+  <!-- ======================================================= -->
+  <include file="$(find robot_control)/launch/robot_control.launch"/>
+
+  <!-- ======================================================= -->
+  <!-- 5) Start the MPC node (publishes /robot_control/command) -->
+  <!-- ======================================================= -->
+  <node name="mpc_node"
+        pkg="mpc_control"
+        type="mpc_node"
+        output="screen">
+    <!-- Run MPC at 20 Hz -->
+    <param name="control_rate" value="20.0"/>
+
+    <!-- MPC advertises on /robot_control/command; remap → /ackermann_cmd -->
+    <remap from="/robot_control/command" to="/ackermann_cmd"/>
+
+    <!-- If odometry is on /odom instead of /ground_truth/state_raw, uncomment: -->
+    <!-- <remap from="/ground_truth/state_raw" to="/odom"/> -->
+  </node>
+
+  <!-- ======================================================= -->
+  <!-- 6) Start the ground_truth_republisher                     -->
+  <!-- ======================================================= -->
+  <node name="ground_truth_republisher"
+        pkg="aamfsd_gazebo"
+        type="ground_truth_republisher.py"
+        output="screen"/>
+</launch>
