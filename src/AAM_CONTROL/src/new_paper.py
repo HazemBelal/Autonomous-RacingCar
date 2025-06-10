@@ -51,6 +51,27 @@ ref_waypoints = []
 steering_ang = 0.0
 last_waypoint_vel = 0.0
 
+# ── MPC PARAMETERS ───────────────────────────────────────────────────────────
+
+# STAGE 4 :addding qp slover 
+
+L = 1.5             # wheelbase
+N = 10              # prediction horizon
+DT = CONTROL_DT     # control loop period (0.1)
+
+# Cost weights (tune these)
+Q_STATE = np.diag([10.0, 10.0, 1.0, 1.0])   # [X, Y, ψ, v]
+R_INPUT = np.diag([1.0, 1.0])               # [δ, a]
+
+# Input constraints
+DELTA_MAX = 0.5
+DELTA_MIN = -0.5
+A_MAX =  1.0
+A_MIN = -2.0
+
+# Storage for previous values
+prev_v_des      = 0.0
+prev_steering   = 0.0
 
 
 class VehicleState:
@@ -245,6 +266,26 @@ def smooth_waypoints(raw_pts):
         ys = [h[i][1] for h in waypoint_history if len(h)>i]
         smoothed.append((sum(xs)/len(xs), sum(ys)/len(ys)))
     return smoothed
+
+def linearize_bicycle(psi, v, delta_prev, dt):
+    """
+    Discrete‐time linearization of kinematic bicycle model at (psi,v,delta_prev).
+    Returns A (4×4), B (4×2).
+    """
+    A = np.eye(4)
+    A[0,2] = -v * math.sin(psi) * dt
+    A[0,3] =  math.cos(psi) * dt
+    A[1,2] =  v * math.cos(psi) * dt
+    A[1,3] =  math.sin(psi) * dt
+    A[2,3] = (delta_prev / L) * dt
+
+    B = np.zeros((4,2))
+    B[2,0] = (v / L) * dt
+    B[3,1] = dt
+
+    return A, B
+
+
 
 def waypoints_callback(wp_msg):
     """
@@ -516,70 +557,108 @@ def listner():
         ##new part 
         rospy.Timer(rospy.Duration(0.1), control_timer_callback)
 
-
 def control_timer_callback(event):
-    """
-    10 Hz loop that:
-      • Feeds in the Stage 3 velocity FF + PID
-      • Computes a proper look‐ahead heading
-      • Adds your Stage 2 cross-track & curvature FF & yaw‐FB
-      • Publishes a single AckermannDriveStamped
-    """
-    global prev_v_des, ref_waypoints, last_waypoint_vel
-    global vehicle_state, robot_control_pub
+    global prev_v_des, prev_steering
 
-    if not ref_waypoints:
-        rospy.logwarn("control_timer: no waypoints, skipping")
+    # 1) Need at least N waypoints
+    if len(ref_waypoints) < N:
+        rospy.logwarn("MPC: not enough waypoints (%d/%d), skipping", len(ref_waypoints), N)
         return
 
-    # — Velocity feed-forward + PID speed — 
-    v_des = last_waypoint_vel
+    # 2) Build reference stack X_ref (4N × 1)
+    X_ref = np.zeros(4 * N)
+    for j in range(N):
+        xj, yj = ref_waypoints[j]
+        # compute psi_ref from segment heading
+        if j < N-1:
+            dx = ref_waypoints[j+1][0] - xj
+            dy = ref_waypoints[j+1][1] - yj
+            psij = math.atan2(dy, dx)
+        else:
+            psij = X_ref[2]  # reuse previous
+        vj = last_waypoint_vel
+        X_ref[4*j:4*j+4] = [xj, yj, psij, vj]
+
+    # 3) Current state x0 = [0,0,0,v_act] in local frame
     v_act = vehicle_state.v
+    x0 = np.array([0.0, 0.0, 0.0, v_act])
 
-    a_des = (v_des - prev_v_des) / CONTROL_DT
-    ff_speed = v_act + a_des * CONTROL_DT
-    prev_v_des = v_des
+    # 4) Linearize once
+    A_k, B_k = linearize_bicycle(x0[2], x0[3], prev_steering, DT)
 
-    u_pid = pid(v_act, v_des)
-    speed_cmd = ff_speed + u_pid * 0.7
+    # 5) Build block‐diagonal A_bar (4N×4N) & B_bar (4N×2N), and c0 offset
+    A_bar = sparse.eye(4*N).tocsc()
+    B_bar = sparse.lil_matrix((4*N, 2*N))
+    c0 = np.zeros(4*N)
 
-    # — Preview heading — 
-    N = min(PREVIEW_N, len(ref_waypoints))
-    headings = [math.atan2(ref_waypoints[i][1], ref_waypoints[i][0])
-                for i in range(N)]
-    w = preview_weights[:N]
-    heading_ref = sum(w_i * h for w_i, h in zip(w, headings)) / sum(w)
+    # first block
+    A_bar[0:4, 0:4] = sparse.csc_matrix(A_k)
+    B_bar[0:4, 0:2] = sparse.csc_matrix(B_k)
+    c0[0:4] = A_k.dot(x0)
 
-    # — Stage 2 cross-track & curvature FF & yaw-FB — 
-    # (recompute or reuse your globals from waypoints_callback)
-    ec = ref_waypoints[0][1]   # y_target
-    k_soft = 3.0
-    # boost cross-track gain on tight turns
-    gain_cte = 2.0 if k > 0.1 else 0.5
-    kss = 0.005
-    kd_yaw = 0.1
-    v_local = max(v_act, 0.1)
-    yaw_rate = globals().get('angvel', 0.0)
+    # subsequent blocks
+    for j in range(1, N):
+        A_bar[4*j:4*j+4, 4*(j-1):4*(j-1)+4] = sparse.csc_matrix(A_k)
+        B_bar[4*j:4*j+4, 2*j:2*j+2]     = sparse.csc_matrix(B_k)
 
-    ff_term = -kss * (v_local**2) * k
-    xt_term = math.atan((gain_cte * ec) / (k_soft + v_local))
-    yaw_fb = kd_yaw * (yaw_rate - (v_local * k))
+    A_bar = A_bar.tocsc()
+    B_bar = B_bar.tocsc()
 
-    final_steering = heading_ref + ff_term + xt_term + yaw_fb
+    # 6) Form Q_bar and R_bar
+    Q_bar = sparse.block_diag([Q_STATE]*N).tocsc()
+    R_bar = sparse.block_diag([R_INPUT]*N).tocsc()
 
-    # — Publish — 
+    # 7) Build H and f for the QP
+    H = B_bar.T.dot(Q_bar.dot(B_bar)) + R_bar
+    # A_bar * [x0; zeros] = Ax0
+    Ax0 = A_bar.dot(np.hstack([x0, np.zeros(4*(N-1))]))
+    f = 2 * (Ax0 - X_ref).T.dot(Q_bar.dot(B_bar))
+
+    # 8) Inequality constraints for u = [δ0,a0,…]
+    # δ_min ≤ δ_j ≤ δ_max
+    Gδ = sparse.vstack([
+      sparse.kron(sparse.eye(N), sparse.csc_matrix([[1,0]])),
+      sparse.kron(sparse.eye(N), sparse.csc_matrix([[-1,0]]))
+    ]).tocsc()
+    hδ = np.hstack([np.ones(N)*DELTA_MAX, np.ones(N)*(-DELTA_MIN)])
+
+    # a_min ≤ a_j ≤ a_max
+    Ga = sparse.vstack([
+      sparse.kron(sparse.eye(N), sparse.csc_matrix([[0,1]])),
+      sparse.kron(sparse.eye(N), sparse.csc_matrix([[0,-1]]))
+    ]).tocsc()
+    ha = np.hstack([np.ones(N)*A_MAX, np.ones(N)*(-A_MIN)])
+
+    G = sparse.vstack([Gδ, Ga]).tocsc()
+    h = np.hstack([hδ, ha])
+
+    # 9) Solve with OSQP
+    prob = osqp.OSQP()
+    prob.setup(P=sparse.csc_matrix(H), q=f, A=G, l=None, u=h, verbose=False)
+    res = prob.solve()
+
+    if res.info.status_val != osqp.constant.STATUS_SOLVED:
+        rospy.logwarn("MPC QP failed, skipping")
+        return
+
+    U = res.x
+    δ0, a0 = U[0], U[1]
+    prev_steering = δ0
+
+    # compute speed command
+    v_cmd = x0[3] + a0 * DT
+
+    # 10) Publish
     cmd = AckermannDriveStamped()
-    cmd.drive.steering_angle = final_steering
-    cmd.drive.speed = speed_cmd
+    cmd.drive.steering_angle = δ0
+    cmd.drive.speed          = v_cmd
     cmd.drive.steering_angle_velocity = 0.0
-    cmd.drive.acceleration = 0.0
-    cmd.drive.jerk = 0.0
+    cmd.drive.acceleration  = 0.0
+    cmd.drive.jerk          = 0.0
     robot_control_pub.publish(cmd)
 
     rospy.loginfo(
-      "control_timer → speed=%.3f, steer=%.3f (preview=%.3f, ff=%.3f, xt=%.3f, yf=%.3f)",
-      speed_cmd, final_steering,
-      heading_ref, ff_term, xt_term, yaw_fb
+      "MPC → δ=%.3f, a=%.3f, v=%.3f", δ0, a0, v_cmd
     )
 
 

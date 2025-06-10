@@ -1,621 +1,743 @@
-#!/usr/bin/env python3
-import math
-import string
-import matplotlib.pyplot as plt
-import rospy
-from visualization_msgs.msg import Marker, MarkerArray
+#!/usr/bin/env python
+import csv
+from fcntl import F_GETLEASE
+from os import path
+from re import U
+from types import LambdaType
+from unittest import skip
 import numpy as np
-from ackermann_msgs.msg import AckermannDriveStamped
-from scipy.stats import multivariate_normal
-from std_msgs.msg import Float32MultiArray
-from sensor_msgs.msg import Imu
-from nav_msgs.msg import Path
+import math
+from numpy.core.fromnumeric import shape
+from numpy.lib.function_base import blackman
+import rospy
+from aam_common_msgs.msg import Cone
+from aam_common_msgs.msg import Map
+from aam_common_msgs.msg import ConeDetections
+from geometry_msgs.msg import Point
 from geometry_msgs.msg import PoseStamped
-from ma_rrt_path_plan.msg import WaypointsArray
+from visualization_msgs.msg import Marker
+from visualization_msgs.msg import MarkerArray
+import sys
+import ros_numpy
+import time 
+from nav_msgs.msg import Odometry
+import tf 
+from tf.transformations import euler_from_quaternion
+from geometry_msgs.msg import Vector3Stamped
+from sensor_msgs.msg import Imu
+from ackermann_msgs.msg import AckermannDriveStamped
+from nav_msgs.msg import Path
+from tf.transformations import euler_from_quaternion, rotation_matrix, quaternion_from_matrix
+from std_msgs.msg import Header, String, ColorRGBA
+from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, PoseArray, Pose, Point, Quaternion
+import math
+import matplotlib.pyplot as plt
+from std_msgs.msg import Float32MultiArray
 
-N_PARTICLE = 20  # number of particle
-NTH= 2
-class Cone:
-    def __init__(self, x,y,color,coneid):
-        self.x=x
-        self.y=y
-        self.color=color
-        self.coneid=coneid
-        
 
-class Particle:
 
-    def __init__(self, x,y,yaw):
-        self.w = 1.0 / N_PARTICLE
-        self.x = x
-        self.y = y
-        self.yaw = yaw
-        # landmark x-y positions
-        self.lm = np.zeros((500, 2))
-        # landmark position covariance
-        self.lmP = np.zeros((500 * 2, 2))
-        # landmark position covariance
-        self.cones=[]
-class fastslam:
-    def __init__(self,particles):
-        rospy.init_node("uKalman_Filter_node", anonymous = True)
-        self.particles=particles
-        self.loopclosures=0
-        self.est=[0,0,0]
-        self.goodcones=[]
-        self.faultycones=[]
-        self.vx=0
-        self.vy=0
-        self.i=0
-        self.yawspeed=0
-        self.yawprev=0
-        self.Q_cov = np.diag([0.1, np.deg2rad(10.0)]) ** 2
-        self.keys=[0,0]
-        self.currtpred=rospy.Time.now().to_sec()
-        self.currtyaw=rospy.Time.now().to_sec()
-        self.angular_vel=0
-        self.currenttime=rospy.Time.now().to_sec()
-        self. path_msg = Path()       
-        self. path_msg.header.stamp = rospy.Time.now()
-        self.path_msg.header.frame_id = 'map'
-        self.currentconeid=0
-        self.timefromlast=rospy.Time.now().to_sec()
-        self.ans=0
-        self.locations=[]
-        self.cones_sub = rospy.Subscriber("/camera_cones_marker", MarkerArray, self.cones_callback)
-        rospy.Subscriber('/waypoints', WaypointsArray, self.waypoints_callback)
+class callbacks_data:
+  def __init__(self): 
+    "This is the constructor function where every object of the class will get the same but can change values"
+    rospy.Subscriber("/lidar_cone_detection_cones",ConeDetections,self.cones_cb)                                   #subscribes to lidar_detections
+    rospy.Subscriber("/centroid_lidar_cones_marker",MarkerArray,callback=self.cones_callback)
+    rospy.Subscriber("/robot_control/command",AckermannDriveStamped,self.control_cb)                               #subscribes to control topic
+    rospy.Subscriber("/sensor_imu_hector",Imu,self.imu_cb)                                                         #subscribes to IMU sensor
+    #rospy.Subscriber("/ground_truth/state_raw",Odometry,self.odom_cb)    
 
-        self.commandcontrol_sub = rospy.Subscriber("vel_ekf",Float32MultiArray, self.control_callback)
-        self.path_publisher = rospy.Publisher('/robot_path', Path, queue_size=10)
-        
-        self.pc_pub = rospy.Publisher("cone_loc", MarkerArray, queue_size=1)
-        self.testcone=rospy.Publisher("/test", MarkerArray, queue_size=1)
-        self.particles_pub = rospy.Publisher("particles_pub", MarkerArray, queue_size=1)
-        self.marker_pub = rospy.Publisher('visualization_loc', Marker, queue_size=10)
-        self.id1=0 
-        self.id2=100
-    def waypoints_callback(self, wp):
-        # Assuming wp has fields 'loopClosure' and 'preliminaryLoopClosure'
-        self.loopClosureFlag = wp.loopClosure
-        self.preliminaryLoopClosureFlag = wp.preliminaryLoopClosure
+    rospy.Subscriber("/vel_ekf",Float32MultiArray,self.odom_callback)
+                                       #subscribes to Odometry topic 
+    self.registered_map = False
+    self.control_angle = 0
+    self.control_velocity = 0
+    self.landmark_x=[]
+    self.landmark_y=[]
+    self.landmark_color=[]
+    #self.map_x = []
+    #self.map_y = []
+    #self.map_color = []
 
-    def cones_callback(self,reccones):
-        if self.keys[0] != -1:
-            self.keys[0] = 0
-            self.currentnewcones=reccones
-            
-            self.keys[0] = 1
-            self.predict()
-    def control_callback (self,controls):
-                       
-                        if self.keys[1] != -1:
-                            self.keys[1] = 0
-                            self.vx=controls.data[0]
-                            self.vy=controls.data[1]
-                            self.ans=controls.data[3]
-                            #print(self.vx)
-                            self.keys[1] = 1
-                            self.predict()
-    def predict(self):
-                                     
-        
-        #predicting each particle depending on state estimation readings
-        if self.keys[0] == 1 and self.keys[1] == 1:
+    self.Velocity_x = 0
+    self.Velocity_y = 0
+    self.position_x = 0
+    self.position_y = 0
+    self.odom_orientation = 0
+    self.imu_header = 'odom'
+    self.angular_velocity = 0
+    self.Vx = 0
+    self.Vy = 0
+    self.yaw = 0
+    self.tf_listener = tf.TransformListener()
+    self.tf_broadcaster = tf.TransformBroadcaster()   
+    self.tf_br = tf.TransformBroadcaster()
+    # the name of the map coordinate frame
+    self.map_frame = "map"
+    # the name of the odometry coordinate frame
+    self.odom_frame = "odom"
+    # the frame of the robot base
+    self.base_frame = "base_link"
 
-            self.keys = [-1, -1]
-            #calculating dt
 
-            if (self.i==0):
-                dt=0.05
-                self.i=1
-                self.timefromlast=rospy.Time.now().to_sec()
-            else:
-                currenttime1=rospy.Time.now().to_sec()           
-                dt=(currenttime1-self.currenttime)
-                for i in range(len(self.particles)):
-                    self.particles[i]=self.bicyclemodel(self.particles[i],dt)
-            #print(dt)        
-            self.currenttime=rospy.Time.now().to_sec()
-            self.update()
+
+  def cones_cb(self,cones_data):
+
+   "We will only need the location (x,y) and color in each and new itearation"
+
+   self.landmark_x=[]
+   self.landmark_y=[]
+   self.landmark_color=[]
+
+
+   for i in cones_data.cone_detections:
+     self.landmark_x.append(i.position.x)
+     self.landmark_y.append(i.position.y)
+     self.landmark_color.append(i.color.data)
+
+  
+  def cones_callback(self,cone_detections):
     
+    self.landmark_x = []
+    self.landmark_y = []
+    self.landmark_color = []
 
-    def update(self):
-        #calculating estimate    
-        self.est=self.calcest()
-        
-        cones=self.currentnewcones
+    for cone in cone_detections.markers:
+      
+      self.landmark_x.append(cone.pose.position.x+1.5)
+      self.landmark_y.append(cone.pose.position.y)
 
-        #find oldcones that was detected before
-        #find new cones that was n't
-        #oldcones contain list with sensorx,sensory ,worldx ,worldy
-
-        newcones,oldcones=self.cones_association (cones,self.goodcones,0)
-        #print (oldcones)
-        #print("newcones")
-        #print(newcones)
-        #print("Faulty Cones")
-        #for i in range (len(self.faultycones)):
-            #print(self.faultycones[i].x,self.faultycones[i].y,self.faultycones[i].coneid)
-        #print(oldcones)
-
-        #print(newcones)
-        #if(len(newcones)>0):
-             #for i in range (len(self.cones)):
-                #print(self.cones[i].x,self.cones[i].y,self.cones[i].color)
-             #print("...............................................")
-        if(len(oldcones)>0):    
-            for oldcone in oldcones:
-                for i in range(len(self.particles)):
-                    w = self.compute_weight(self.particles[i], oldcone)
-                    self.particles[i].w *= w
-                    self.particles[i] = self.update_landmark(self.particles[i], oldcone)
-        #print(closestcone)
-
-        #print(self.particles[0].lm)
-        #print(self.particles[1].lm)
-        #print(self.particles[2].lm)
-        #print(self.particles[3].lm)
-        #print(self.particles[4].lm)
-        if(self.loopclosures==0):
-            self.faultycones=self.calconespart(newcones)
-        self.particles = self.normalize_weight(self.particles)    
-        self.particles=self.resampling(self.particles)
-        self.est=self.calcest()
+      r=cone.color.r
+      g=cone.color.g
+      b=cone.color.b
+      color=""
+      if r == 255 and g == 255 and b == 0 :
+            color="yellow_cone"
+      elif r == 0 and g == 0 and b == 255 :
+            color="blue_cone"
+      elif r == 255 and g == 0 and b == 0 :
+            color="orange_cone"
+      self.landmark_color.append(color)
 
 
-        
-        #updating main map
-        if(self.loopclosures==0):
-            newcones,oldcones=self.cones_association (cones,self.goodcones,1) 
-            self.goodcones=self.calconesmap(newcones)
-        if(self.loopclosures==0):
-            for newcone in newcones:
-                for i in range(len(self.particles)):
-                    self.particles[i]=self.add_new_landmark(self.particles[i],newcone)
-                #print(Particles[i].x,Particles[i].y)    
-        #self.visualize(self.cones)
-        #print(self.est)
-        #print([self.vx,self.vy])
-        
-        #for i in range (len(self.cones)):
-            #print(self.cones[i].x,self.cones[i].y,self.cones[i].color)
+  def control_cb(self,control_data):                        #For control model
 
-        self.visualizec(self.goodcones)
-        x1=self.est[0]
-        y1=self.est[1]
-        loopclosureflag=self.visualizeb(x1,y1)
-        self.visualizepar(self.particles)
-        self.visualizeloc()
-        print((rospy.Time.now().to_sec()-self.timefromlast))
-        if(loopclosureflag and (rospy.Time.now().to_sec()-self.timefromlast)>10):
-             self.timefromlast=rospy.Time.now().to_sec()
-             print("lafffffffffffffffffffffffffffffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeena")
-             self.loopclosures+=1
-             marker_array = MarkerArray()
-             for point in self.goodcones:
-                # Set the marker position to the point position
-                    marker = Marker()
-                    marker.header.frame_id = "map"
-                    marker.type = Marker.SPHERE
-                    marker.action = Marker.ADD
-                    marker.scale.x = 0.2
-                    marker.scale.y = 0.2
-                    marker.scale.z = 0.2
-                    marker.color.a = 1.0
-                    marker.color.r = 1.0
-                    marker.pose.orientation.x = 0.0
-                    marker.pose.orientation.y = 0.0
-                    marker.pose.orientation.z = 0.0
-                    marker.pose.orientation.w = 1.0
-                    marker.id=self.id1
-                    marker.pose.position.x = (point.x)
-                    marker.pose.position.y = (point.y)
-                    marker.pose.position.z = 0
-                    marker.lifetime=rospy.Time(1/5)
-                    self.id1+=1
-                    # Add the marker to the marker array
-                    marker_array.markers.append(marker)
+   self.control_angle = control_data.drive.steering_angle
+   self.control_velocity = control_data.drive.speed
 
-             self.testcone.publish(marker_array)
-             
-        self.keys=[0,0]
-    def visualizeloc(self):
-        marker = Marker()
-        marker.header.frame_id = "map"
-        marker.header.stamp = rospy.Time.now()
-        marker.ns = "basic_shapes"
-        marker.id = 0
-        marker.type = Marker.SPHERE
-        marker.action = Marker.ADD
-        marker.pose.position.x = self.est[0]
-        marker.pose.position.y = self.est[1]
-        marker.pose.position.z = 1.0
-        marker.pose.orientation.x = 0.0
-        marker.pose.orientation.y = 0.0
-        marker.pose.orientation.z = 0.0
-        marker.pose.orientation.w = 1.0
-        marker.scale.x = 0.5
-        marker.scale.y = 0.5
-        marker.scale.z = 0.5
-        marker.color.a = 1.0  # Alpha
-        marker.color.r = 0.0
-        marker.color.g = 1.0  # Green color
-        marker.color.b = 0.0
-        marker.lifetime = rospy.Duration()
 
-        self.marker_pub.publish(marker)
-    
+      
 
 
 
 
 
+  def imu_cb(self,imu_data):
 
-    def visualizepar(self,particles):
-          marker_array = MarkerArray()
-          for particle in self.particles:
+   self.angular_velocity = imu_data.angular_velocity.z
+   self.imu_header=imu_data.header.frame_id
 
-        # Set the marker position to the point position
-            marker = Marker()
-            marker.header.frame_id = "map"
-            marker.type = Marker.SPHERE
-            marker.action = Marker.ADD
-            marker.scale.x = 0.2
-            marker.scale.y = 0.2
-            marker.scale.z = 0.2
-            marker.color.a = 1.0
-            marker.color.r = 1.0
-            marker.pose.orientation.x = 0.0
-            marker.pose.orientation.y = 0.0
-            marker.pose.orientation.z = 0.0
-            marker.pose.orientation.w = 1.0
-            marker.id=self.id2
-            marker.pose.position.x = (particle.x)
-            marker.pose.position.y = (particle.y)
-            marker.pose.position.z = 0
-            marker.lifetime=rospy.Time(1/5)
-            self.id2+=1
-            # Add the marker to the marker array
-            marker_array.markers.append(marker)
-          self.particles_pub.publish(marker_array)
-         
-    def visualizeb(self, x1, y1):
-        # Create a new PoseStamped for the current estimate
-        pose = PoseStamped()
-        pose.header.stamp = rospy.Time.now()
-        pose.header.frame_id = 'map'
-        pose.pose.position.x = x1
-        pose.pose.position.y = y1
-        pose.pose.position.z = 0  # or your desired z value
+  def odom_callback(self,odom_msg):
+     self.Vx = odom_msg.data[0]
+     self.Vy = odom_msg.data[1]
 
-        # Append the current pose to the path message
-        self.path_msg.poses.append(pose)
+    #self.Vx = Vx * math.cos() + Vy * math.sin()
+    #self.Vy = -Vx * math.sin() + Vy* math.cos() 
+     self.heading = odom_msg.data[2]
+     self.yaw = odom_msg.data[3]
+    # print(self.Vx)
 
-        # (Optional) Limit the number of poses to avoid an ever‐growing list
-        # max_poses = 1000
-        # if len(self.path_msg.poses) > max_poses:
-        #     self.path_msg.poses = self.path_msg.poses[-max_poses:]
 
-        # Publish the updated path
-        self.path_publisher.publish(self.path_msg)
 
-        # Instead of computing the loop closure flag locally, use the flag from /waypoints:
-        loopclosureflag = self.loopClosureFlag  if hasattr(self, 'loopClosureFlag') else False
+def publishing_cones2(data):
 
-        return loopclosureflag
-
-    def visualizec(self,cones):
-         marker_array = MarkerArray()
-         for point in self.goodcones:
-            if(point.color=="blue"):
-                 color=[0,0,200]
-            else:
-                 color= [200,200,0]
-        # Set the marker position to the point position
-            marker = Marker()
-            marker.header.frame_id = "map"
-            marker.type = Marker.SPHERE
-            marker.action = Marker.ADD
-            marker.scale.x = 0.2
-            marker.scale.y = 0.2
-            marker.scale.z = 0.2
-            marker.color.a = 1.0
-            marker.color.r = color[0]
-            marker.color.g=color[1]
-            marker.color.b=color[2]
-            marker.pose.orientation.x = 0.0
-            marker.pose.orientation.y = 0.0
-            marker.pose.orientation.z = 0.0
-            marker.pose.orientation.w = 1.0
-            marker.id=self.id1
-            marker.pose.position.x = (point.x)
-            marker.pose.position.y = (point.y)
-            marker.pose.position.z = 0
-            marker.lifetime=rospy.Time(1/5)
-            self.id1+=1
-            # Add the marker to the marker array
-            marker_array.markers.append(marker)
-    # print(len(marker_array.markers)) 
-         self.pc_pub.publish(marker_array)
-    
-
-    def add_new_landmark(self,particle, z):
-        r=((z[0])**2+(z[1])**2)**0.5
-        b=math.atan2(z[1],z[0])
-        lm_id = int(z[5])
-
-        s = math.sin(self.pi_2_pi(particle.yaw + b))
-        c = math.cos(self.pi_2_pi(particle.yaw + b))
-
-        particle.lm[lm_id, 0] = particle.x + r * c
-        particle.lm[lm_id, 1] = particle.y + r * s
-
-        # covariance
-        dx = r * c
-        dy = r * s
-        d2 = dx**2 + dy**2
-        d = math.sqrt(d2)
-        Gz = np.array([[dx / d, dy / d],
-                    [-dy / d2, dx / d2]])
-        particle.lmP[2 * lm_id:2 * lm_id + 2] = np.linalg.inv(
-            Gz) @ self.Q_cov @ np.linalg.inv(Gz.T)
-
-        return particle
-
-    def calconesmap(self,newcones):
-         for cone1 in newcones:
-              self.goodcones.append(Cone(cone1[2],cone1[3],cone1[4],cone1[5]))              
-         return self.goodcones
-    def calconespart(self,newcones):
-         for cone1 in newcones:
-              self.faultycones.append(Cone(cone1[2],cone1[3],cone1[4],cone1[5] ))              
-         return self.faultycones   
-    def calcest(self):
-         self.est=[0,0,0]
-         for i in range(len(self.particles)):
-              self.est[0]+=self.particles[i].x*self.particles[i].w
-              self.est[1]+=self.particles[i].y*self.particles[i].w
-              self.est[2]+=self.particles[i].yaw*self.particles[i].w   
-         return self.est
-    
-    def normalize_weight(self,particles):
-        sum_w = sum([p.w for p in particles])
-
-        try:
-            for i in range(N_PARTICLE):
-                particles[i].w /= sum_w
-                #print(particles[i].w)
-        except :
-            for i in range(N_PARTICLE):
-                particles[i].w = 1.0 / N_PARTICLE
-
-            return particles
-
-        return particles
-    
-    def update_landmark (self,particle, z):
-
-        lm_id = int(z[2])
-        xf = np.array(particle.lm[lm_id, :]).reshape(2, 1)
-        Pf = np.array(particle.lmP[2 * lm_id:2 * lm_id + 2, :])
-
-        zp, Hv, Hf, Sf = self.compute_jacobians(particle, xf, Pf)
-        r=((z[0])**2+(z[1])**2)**0.5
-        b=math.atan2(z[1],z[0])
-        zu=[r,b,z[2]]
-        zu=np.array(zu)
-        dz = zu[0:2].reshape(2, 1) - zp
-        dz[1, 0] = self.pi_2_pi(dz[1, 0])
-
-        xf, Pf = self.update_kf_with_cholesky(xf, Pf, dz, Hf)
-
-        particle.lm[lm_id, :] = xf.T
-        particle.lmP[2 * lm_id:2 * lm_id + 2, :] = Pf
-
-        return particle
-
-    
-    def resampling(self,particles):
+   " we will only need positions ,header ,scales , and color"
+   map_marker2=Marker()
+   map3=MarkerArray()
+   x=0
+   print(data,'dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+   saving2(data)
    
+
+
+
+
+
+
+
+
+
+
+
+def publishing_cones(data):
+
+   " we will only need positions ,header ,scales , and color"
+   
+ 
+   map_marker=Marker()
+   
+   x=0
+   map_x=[]
+   map_y=[]
+   global map2
+
+   for i in range(calc_n_LM(data)):
+
+     map_x.append(data[STATE_SIZE + i * 2,0])
+     map_y.append(data[STATE_SIZE+ i * 2 + 1,0])
+    
+ #print("in map viz",len(mapx))
+   while x < len(map_x):
+    
+        map_marker.header.frame_id = "map"
+        map_marker.ADD
+        map_marker.SPHERE
+        map_marker.pose.position.x = map_x[x]
+        map_marker.pose.position.y = map_y[x]
+        map_marker.pose.position.z = 0
+        map_marker.pose.orientation.w = 1
+        map_marker.scale.x = 1
+        map_marker.scale.y = 1
+        map_marker.scale.z = 1
+        map_marker.color.a = 1
+        map_marker.id +=1
+        map_marker.mesh_resource = "package://aamfsd_description/meshes/cone_blue.dae"
+        map_marker.type = Marker.MESH_RESOURCE
+        map_marker.mesh_use_embedded_materials = True
+        map2.markers.append(map_marker)
+        x+=1
+  
+
+    #print("published cone ",x," number ",calc_n_LM(data))
+   pub2.publish(map2) 
+   saving(map_x,map_y)
+    
+ 
+def pi_2_pi(angle):
+    return (angle + math.pi) % (2 * math.pi) - math.pi
+
+
+
+def calc_input(data):
+    v = data.control_velocity  # [m/s]
+    yawrate = data.angular_velocity  # [rad/s]
+    u = np.array([[v, yawrate]]).T
+    return u
+
+
+
+
+def search_correspond_LM_ID(xAug, PAug, zi):
+    """
+    Landmark association with Mahalanobis distance.
+
+    If this landmark is at least M_DIST_TH units away from all known landmarks,
+    it is a NEW landmark.
+
+    :param xAug: The estimated state
+    :param PAug: The estimated covariance
+    :param zi:   the read measurements of specific landmark
+    :returns:    landmark id
+    """
+
+    nLM = calc_n_LM(xAug)
+
+    mdist = []
+
+    for i in range(nLM):
+        lm = get_LM_Pos_from_state(xAug, i)
+        y, S, H = calc_innovation(lm, xAug, PAug, zi, i)
+        mdist.append(math.sqrt(np.dot(np.dot(y.T , np.linalg.inv(S)) , y)))
+
+    mdist.append(M_DIST_TH)  # new landmark
+
+    minid = mdist.index(min(mdist))
+
+    return minid
+
+
+
+
+
+def get_LM_Pos_from_state(x, ind):
+    """
+    Returns the position of a given landmark
+
+    :param x:   The state containing all landmark positions
+    :param ind: landmark id
+    :returns:   The position of the landmark
+    """
+    lm = x[STATE_SIZE + LM_SIZE * ind: STATE_SIZE + LM_SIZE * (ind + 1), :]
+
+    return lm
+
+
+
+
+
+
+
+def calc_LM_Pos(x, z,id):
+    """
+    Calculates the pose in the world coordinate frame of a landmark at the given measurement.
+
+    :param x: [x; y; theta]
+    :param z: [range; bearing]
+    :returns: [x; y] for given measurement
+    """
+    zp = np.zeros((2, 1))
+
+    zp[0, 0] = x[0, 0] + z[0] * math.cos(x[2, 0] + z[1])
+    zp[1, 0] = x[1, 0] + z[0] * math.sin(x[2, 0] + z[1])
+
+    #zp[0, 0] = x[0, 0] + z[0, 0] * math.cos(x[2, 0] + z[0, 1])
+    #zp[1, 0] = x[1, 0] + z[0, 0] * math.sin(x[2, 0] + z[0, 1])
+
+    return zp
+
+
+
+
+
+
+
+
+
+
+
+def jacob_motion(x, call_backs_data):
+    """
+    Calculates the jacobian of motion model.
+
+    :param x: The state, including the estimated position of the system
+    :param u: The control function
+    :returns: G:  Jacobian
+              Fx: STATE_SIZE x (STATE_SIZE + 2 * num_landmarks) matrix where the left side is an identity matrix
+    """
+
+    # [eye(3) [0 x y; 0 x y; 0 x y]]
+    v=math.sqrt((call_backs_data.Vx**2)+(call_backs_data.Vy**2))
+    Fx = np.hstack((np.eye(STATE_SIZE), np.zeros(
+        (STATE_SIZE, LM_SIZE * calc_n_LM(x)))))
+    global dt 
+
+    jF = np.array([[0.0, 0.0, -dt * v * math.sin(x[2, 0])],
+                   [0.0, 0.0, dt * v * math.cos(x[2, 0])],
+                   [0.0, 0.0, 0.0]],dtype=object)
+
+    G = np.eye(STATE_SIZE) + np.dot(np.dot(Fx.T , jF) ,Fx)
+    return G, Fx
+
+
+
+
+
+
+
+
+
+def calc_n_LM(x):
+    """
+    Calculates the number of landmarks currently tracked in the state
+    :param x: the state
+    :returns: the number of landmarks n
+    """
+    n = int((len(x) - STATE_SIZE) / LM_SIZE)
+    return n
+
+
+
+
+
+
+
+
+
+def observation(Call_backs_data):
+    """
+    :param xTrue: the true pose of the system
+    :param xd:    the current noisy estimate of the system
+    :param u:     the current control input
+    :param RFID:  the true position of the landmarks
+
+    :returns:     Computes the true position, observations, dead reckoning (noisy) position,
+                  and noisy control function
+    """
+    # add noise to gps x-y
+    z = np.zeros((0, 3))
+
+    for i in range(len(Call_backs_data.landmark_x)-1): # Test all beacons, only add the ones we can see (within MAX_RANGE)
+
+        dx = Call_backs_data.landmark_x[i]
+        dy = Call_backs_data.landmark_y[i]
+        d = math.sqrt(dx**2 + dy**2)
+        angle = pi_2_pi(math.atan2(dy, dx))
+        if d <= MAX_RANGE:
+            dn = d  # add noise
+            anglen = angle   # add noise
+            zi = np.array([dn, anglen, i])
+            z = np.vstack((z, zi))
+    return  z
+
+
+
+
+
+def jacobH(q, delta, x, i):
+    """
+    Calculates the jacobian of the measurement function
+
+    :param q:     the range from the system pose to the landmark
+    :param delta: the difference between a landmark position and the estimated system position
+    :param x:     the state, including the estimated system position
+    :param i:     landmark id + 1
+    :returns:     the jacobian H
+    """
+    sq = math.sqrt(q)
+    G = np.array([[-sq * delta[0, 0], - sq * delta[1, 0], 0, sq * delta[0, 0], sq * delta[1, 0]],
+                  [delta[1, 0], - delta[0, 0], - q, - delta[1, 0], delta[0, 0]]])
+
+    G = G / q
+    nLM = calc_n_LM(x)
+    F1 = np.hstack((np.eye(3), np.zeros((3, 2 * nLM))))
+    F2 = np.hstack((np.zeros((2, 3)), np.zeros((2, 2 * (i - 1))),
+                    np.eye(2), np.zeros((2, 2 * nLM - 2 * i))))
+
+    F = np.vstack((F1, F2))
+
+    H = np.dot(G , F)
+
+    return H
+
+
+
+
+
+
+
+
+
+
+def calc_innovation(lm, xEst, PEst, z, LMid):
+    """
+    Calculates the innovation based on expected position and landmark position
+
+    :param lm:   landmark position
+    :param xEst: estimated position/state
+    :param PEst: estimated covariance
+    :param z:    read measurements
+    :param LMid: landmark id
+    :returns:    returns the innovation y, and the jacobian H, and S, used to calculate the Kalman Gain
+    """
+    delta = lm - xEst[0:2]
+    q = np.dot(delta.T , delta)[0, 0]
+    zangle = math.atan2(delta[1, 0], delta[0, 0]) - xEst[2, 0]
+    zp = np.array([[math.sqrt(q), pi_2_pi(zangle)]])
+    # zp is the expected measurement based on xEst and the expected landmark position
+    #publishing_cones(lm,LMid)
+    y = (z - zp).T # y = innovation
+    y[1] = pi_2_pi(y[1])
+
+    H = jacobH(q, delta, xEst, LMid + 1)
+    S = np.dot(np.dot(H , PEst) , H.T) + Cx[0:2,0:2]
+
+    return y, S, H
+
+
+def broadcast_last_transform(call_backs_data):
+
+  """ Make sure that we are always broadcasting the last map
+      to odom transformation.  This is necessary so things like
+      move_base can work properly. """
+###################################################### translation and rotation gaieen mnen 
+  call_backs_data.tf_broadcaster.sendTransform(call_backs_data.translation,
+                                    call_backs_data.rotation,
+                                    rospy.get_rostime(),
+                                    call_backs_data.base_frame,
+                                    call_backs_data.map_frame)
+
+  
+def fix_map_to_odom_transform(call_backs_data,xEst):
+  """ This method constantly updates the offset of the map and
+      odometry coordinate systems based on the latest results from
+      the localizer """
+
+  (call_backs_data.translation, call_backs_data.rotation) = convert_pose_inverse_transform(xEst[0],xEst[1],xEst[2])    #small track +math.pi/2
+
+  p = PoseStamped(pose= convert_translation_rotation_to_pose(call_backs_data.translation,call_backs_data.rotation),
+                      header=Header(frame_id=call_backs_data.base_frame))
+  
+  call_backs_data.odom_to_map = call_backs_data.tf_listener.transformPose(call_backs_data.base_frame, p)
+
+
+def convert_translation_rotation_to_pose(translation, rotation):
+  """ Convert from representation of a pose as translation and rotation (Quaternion) tuples to a geometry_msgs/Pose message """
+  return Pose(position=Point(x=translation[0],y=translation[1],z=translation[2]), orientation=Quaternion(x=rotation[0],y=rotation[1],z=rotation[2],w=rotation[3]))
+
+
+def convert_pose_inverse_transform(poseX,poseY,theta):
+  """ Helper method to invert a transform (this is built into the tf C++ classes, but ommitted from Python) """
+  translation = np.zeros((4,1))
+  translation[0] = poseX
+  translation[1] = poseY
+  translation[2] = 0.0
+  translation[3] = 1.0
+  
+
+
+  rotation = np.transpose(rotation_matrix(0, [0,0,1]))
+  transformed_translation = rotation.dot(translation)
+
+  translation = (transformed_translation[0], transformed_translation[1], transformed_translation[2])
+  rotation = quaternion_from_matrix(rotation)
+  rotation = tf.transformations.quaternion_from_euler(0.0, 0.0 ,theta)
+  
+
+  return (translation, rotation)
+
+
+
+def motion_model(x, call_backs_data):
+    """
+    Computes the motion model based on current state and input function.
+
+    :param x: 3x1 pose estimation
+    :param u: 2x1 control input [v; w]
+    :returns: the resulting state after the control function is applied
+    """
+    global dt
+    x[0] = x[0] + (call_backs_data.Vx)*dt   #  phi-math.pi/2  small track
+    x[1] = x[1] + (call_backs_data.Vy)*dt
+    #x[2] = x[2] + phi
+    x[2]= call_backs_data.yaw
+    return x
+
+
+
+
+def ekf_slam(xEst, PEst,z,call_backs_data):
+    """
+    Performs an iteration of EKF SLAM from the available information.
+
+    :param xEst: the belief in last position
+    :param PEst: the uncertainty in last position
+    :param u:    the control function applied to the last position
+    :param z:    measurements at this step
+    :returns:    the next estimated position and associated covariance
+    """
+    S = STATE_SIZE
+
+    # Predict
+    xEst, PEst, G, Fx = predict(xEst, PEst,call_backs_data)
+    initP = np.eye(2)
+
+    # Update
+    xEst, PEst = update(xEst, PEst,z, initP)
+
+    return xEst, PEst
+
+
+
+
+
+
+
+
+
+def predict(xEst, PEst,call_backs_data):
+    """
+    Performs the prediction step of EKF SLAM
+
+    :param xEst: nx1 state vector
+    :param PEst: nxn covariance matrix
+    :param u:    2x1 control vector
+    :returns:    predicted state vector, predicted covariance, jacobian of control vector, transition fx
+    """
+    S = STATE_SIZE
+    G, Fx = jacob_motion(xEst[0:S], call_backs_data)
+    xEst[0:S] = motion_model(xEst[0:S],call_backs_data)
+
+    #else:
+     #xEst=xEst
+
+    # Fx is an an identity matrix of size (STATE_SIZE)
+    # sigma = G*sigma*G.T + Noise
+    #PEst[0:S, 0:S] = G.T @ PEst[0:S, 0:S] @ G + Fx.T @ Cx @ Fx
+    PEst[0:S, 0:S] = np.dot( G.T , np.dot(PEst[0:S, 0:S] , G )) + np.dot( Fx.T , np.dot(Cx , Fx) )
+
+    return xEst, PEst, G, Fx
+
+
+
+
+
+
+
+
+
+
+
+
+def update(xEst, PEst,z, initP):
+    """
+    Performs the update step of EKF SLAM
+
+    :param xEst:  nx1 the predicted pose of the system and the pose of the landmarks
+    :param PEst:  nxn the predicted covariance
+    :param u:     2x1 the control function
+    :param z:     the measurements read at new position
+    :param initP: 2x2 an identity matrix acting as the initial covariance
+    :returns:     the updated state and covariance for the system
+    """
+
+    for iz in range(len(z[:, 0])):  # for each observation
+        minid = search_correspond_LM_ID(xEst, PEst, z[iz, 0:2]) # associate to a known landmark
+
+        nLM = calc_n_LM(xEst) # number of landmarks we currently know about
+
+        if minid == nLM: # Landmark is a NEW landmark
+            #print("New LM")
+            # Extend state and covariance matrix
+            xAug = np.vstack((xEst, calc_LM_Pos(xEst, z[iz, :],minid)))
+            PAug = np.vstack((np.hstack((PEst, np.zeros((len(xEst), LM_SIZE)))),
+                              np.hstack((np.zeros((LM_SIZE, len(xEst))), initP))))
+            xEst = xAug
+            PEst = PAug
+        vlm=calc_LM_Pos(xEst, z[iz, :],minid)
+        saving2(vlm)
+        lm = get_LM_Pos_from_state(xEst, minid)
+         #print(lm," this is a cone location")
+        #publishing_cones(lm)
+        y, S, H = calc_innovation(lm, xEst, PEst, z[iz, 0:2], minid)
+
+        K = np.dot(np.dot(PEst , H.T) , np.linalg.inv(S)) # Calculate Kalman Gain
+        xEst = xEst + np.dot(K , y)
+        PEst = np.dot((np.eye(len(xEst)) - np.dot(K , H)) , PEst)
+  
         
-        
+    xEst[2] = pi_2_pi(xEst[2])
+   
+    print("size = ",calc_n_LM(xEst))
+
+    publishing_cones(xEst)
+    return xEst, PEst
 
 
-        pw = []
-        for i in range(N_PARTICLE):
-            pw.append(particles[i].w)
 
-        pw = np.array(pw)
-        #print(pw)
 
-        n_eff = 1.0 / (pw @ pw.T)  # Effective particle number
-    # print(n_eff)
+def saving(x,y):
+  #print("eeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+  fulldata=[[],[]]
+  for i in range(len(x)):
+    mydata=[x[i],y[i]]
+    fulldata.append(mydata)
+    i+=1
+  filename='/home/yasser/map.csv'
+  with open(filename, 'w') as csvfile: 
+    csvwriter = csv.writer(csvfile) 
+    csvwriter.writerows(fulldata)
 
-        if n_eff < NTH:
-            #print("resampled")
-               # resampling
-            w_cum = np.cumsum(pw)
-            base = np.cumsum(pw * 0.0 + 1 / N_PARTICLE) - 1 / N_PARTICLE
-            resample_id = base + np.random.rand(base.shape[0]) / N_PARTICLE
+def saving2(x):
+  #print("eeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+  fulldata=[[],[]]
 
-            inds = []
-            ind = 0
-            for ip in range(N_PARTICLE):
-                while (ind < w_cum.shape[0] - 1) \
-                        and (resample_id[ip] > w_cum[ind]):
-                    ind += 1
-                inds.append(ind)
-        
-            tmp_particles = self.particles[:]
-            for i in range(len(inds)):
-                particles[i].x = tmp_particles[inds[i]].x
-                particles[i].y = tmp_particles[inds[i]].y
-                particles[i].yaw = tmp_particles[inds[i]].yaw
-                particles[i].cones = tmp_particles[inds[i]].cones
-                particles[i].w = 1.0 / N_PARTICLE
+  for i in range(len(x)):
+    mydata=[x[0,0],x[1,0]]
+    fulldata.append(mydata)
+    i+=1
+  filename='/home/yasser/map_centroid.csv'
+  with open(filename, 'w') as csvfile: 
+    csvwriter = csv.writer(csvfile) 
+    csvwriter.writerows(fulldata)
 
-        return particles
+def savingP(x):
+  #print("eeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+  fulldata=[[],[],[]]
+  print((len(x)/2))
+  for i in range(int(len(x)/2)):
+    mydata=[x[i,0],x[i+1,0],x[i+2,0]]
+    fulldata.append(mydata)
+    i+=1
+  filename='/home/yasser/path.csv'
+  with open(filename, 'w') as csvfile: 
+    csvwriter = csv.writer(csvfile) 
+    csvwriter.writerows(fulldata)
 
-    def compute_weight(self,particle, z):
-        lm_id = int(z[2])
-        r=((z[0])**2+(z[1])**2)**0.5
-        b=math.atan2(z[1],z[0])
-        
-        #print("xf")
-        dist=100
-        #for i in range(100):
-            #xu = np.array(particle.lm[i, :]).reshape(2, 1)
-            #if(xu[0,0]!=0 and xu[1,0]!=0):
-                #dx = xu[0, 0] - particle.x
-                #dy = xu[1, 0] - particle.y
-                #d2 = dx ** 2 + dy ** 2
-                #d = math.sqrt(d2)
-                #d2=d*math.cos(self.pi_2_pi(math.atan2(dy, dx) - particle.yaw))
-                #d3=d*math.sin(self.pi_2_pi(math.atan2(dy, dx) - particle.yaw))
-                #if((((z[0]-d2)**2+(z[1]-d3)**2)**0.5)<dist):
-                    #dist=(((z[0]-d2)**2+(z[1]-d3)**2)**0.5)
-                    #lm_id=i
-        xf = np.array(particle.lm[lm_id, :]).reshape(2, 1)             
-        Pf = np.array(particle.lmP[2 * lm_id:2 * lm_id + 2])
-        zp, Hv, Hf, Sf = self.compute_jacobians(particle, xf, Pf)
-        zu=[r,b,z[2]]
-        zu=np.array(zu)
-        dx = zu[0:2].reshape(2, 1) - zp
-        #print(zu)
-        #print(zp)
-        #print(xf)
-        
 
-        #print("..........")
-        dx[1, 0] = self.pi_2_pi(dx[1, 0])
 
-        try:
-           invS = np.linalg.inv(Sf)
-        except np.linalg.linalg.LinAlgError:
-            return 1.0
+def main(call_backs_data):
+    "This is the main function where everything takes place"
 
-        num = np.exp(-0.5 * (dx.T @ invS @ dx))[0, 0]
-        den = 2.0 * math.pi * math.sqrt(np.linalg.det(Sf))
+    global start_time
+    start_time = rospy.get_rostime().to_sec()-0.000001
+    # State Vector [x y yaw v]'
+    xEst = np.zeros((STATE_SIZE, 1))
+    PEst = np.eye(STATE_SIZE)
+    # history
+    hxEst = xEst
+    while not rospy.is_shutdown():
+     global  dt
+     dt= rospy.get_rostime().to_sec() - start_time
+     start_time = rospy.get_rostime().to_sec()
 
-        w = num / den
+     #u = calc_input(call_backs_data)
 
-        return w
-    def compute_jacobians(self,particle, xf, Pf):
-        dx = xf[0, 0] - particle.x
-        dy = xf[1, 0] - particle.y
-        d2 = dx ** 2 + dy ** 2
-        d = math.sqrt(d2)
-        #print(particle.x,particle.y)
-        zp = np.array(
-            [d, self.pi_2_pi(math.atan2(dy, dx) - particle.yaw)]).reshape(2, 1)
+     z= observation(call_backs_data)
+     xEst, PEst = ekf_slam(xEst, PEst, z,call_backs_data)
+     fix_map_to_odom_transform(call_backs_data,xEst)
+     broadcast_last_transform(call_backs_data)
 
-        Hv = np.array([[-dx / d, -dy / d, 0.0],
-                   [dy / d2, -dx / d2, -1.0]])
 
-        Hf = np.array([[dx / d, dy / d],
-                   [-dy / d2, dx / d2]])
+     print(xEst,"batngan")
+     x_state = xEst[0:STATE_SIZE]
+     publish_path(xEst[:3,0])
+     #saving(xEst)
 
-        Sf = Hf @ Pf @ Hf.T + self.Q_cov
+    
+    #publishing_cones(z)
 
-        return zp, Hv, Hf, Sf 
-    def update_kf_with_cholesky(self,xf, Pf, v, Hf):
-        PHt = Pf @ Hf.T
-        S = Hf @ PHt + self.Q_cov
+    # store data history
+     hxEst_x = []
+     hxEst_y = []
+     hxEst_w = []
+     hxEst_x.append(x_state[0])
+     hxEst_y.append(x_state[1])
+     hxEst_w.append(x_state[2])
 
-        S = (S + S.T) * 0.5
-        s_chol = np.linalg.cholesky(S).T
-        s_chol_inv = np.linalg.inv(s_chol)
-        W1 = PHt @ s_chol_inv
-        W = W1 @ s_chol_inv.T
+def publish_path(data_x):
+  poses= PoseStamped()
+  poses.header.frame_id="map"
+  poses.pose.position.x=data_x[0]
+  poses.pose.position.y=data_x[1]
+  poses.pose.orientation.w=data_x[2]
+  global oath
+  oath.poses.append(poses)
+  pub.publish(oath)
+  print("path published")
 
-        x = xf + W @ v
-        P = Pf - W1 @ W1.T
-
-        return x, P
-
-         
-    def cones_association (self,cones,conestype,partorest):
-                
-                oldcones=[]
-                newcones=[]
-                for cone in cones.markers:
-                    if ((cone.pose.position.x>1 and  cone.pose.position.x<6) and (cone.pose.position.y>-4 and cone.pose.position.y<4) ):
-                    #finding position of cones with respect to the world
-                        rangeofdetected=((cone.pose.position.x)**2+(cone.pose.position.y)**2)**0.5
-                        anglebetcarcone=math.atan2(cone.pose.position.y,cone.pose.position.x)
-                        measuredpositionofconex=self.est[0]+rangeofdetected*math.cos(self.est[2]+ anglebetcarcone)
-                        measuredpositionofconey=self.est[1]+rangeofdetected*math.sin(self.est[2]+ anglebetcarcone)
-                        
-                        idx=0
-                        f=0
-
-                        
-                        for landmark in conestype:
-                            
-                            #if distance between two detected cone and cone already detected less than or equal 2 considered same cone
-                            u=math.sqrt(((measuredpositionofconex-landmark.x)**2+(measuredpositionofconey-landmark.y)**2))   
-                            if(u<=2.8):
-                                oldcones.append([cone.pose.position.x,cone.pose.position.y,landmark.coneid])
-                                f=1
-                                break
-                            idx+=1     
-                        if(f==0):
-                            
-                            if ((cone.color.r==0)and (cone.color.g==0) and (cone.color.b==200) ):
-                                color="blue"
-                            else:
-                                color="yellow"         
-                            newcones.append([cone.pose.position.x,cone.pose.position.y,measuredpositionofconex,measuredpositionofconey,color,self.currentconeid])
-                            if(partorest==1):
-                                self.currentconeid+=1
-        
-                return newcones,oldcones   
-    def bicyclemodel(self,particle,dt):
-         mean = 0
-         std_dev = 0.4  # Adjust this value to control the amount of noise
-            # Adding Gaussian noise
-         noise = np.random.normal(mean, std_dev)
-        #Simulating bicycle model
-         #noise=0
-         particle.x=particle.x+(self.vx+noise)*dt
-         particle.y=particle.y+(self.vy+noise)*dt
-         #particle.yaw=particle.yaw+self.angular_vel*dt
-         particle.yaw=self.ans
-         particle.yaw=self.pi_2_pi(particle.yaw) 
-         
-         return particle
-    def pi_2_pi(self,angle):
-       #normalize angle
-       return (angle + math.pi) % (2 * math.pi) - math.pi                         
 if __name__ == '__main__':
-    try:
-        # Known starting position
-        x_range = (-1, 1)  # Range for x
-        y_range = (-1, 1)  # Range for y
-        theta_range = (-np.pi, np.pi)  # Range for theta
+  rospy.init_node("final_ekf")
 
-        # Generate particles
-        particlesrand = np.random.uniform(
-            low=[x_range[0], y_range[0], theta_range[0]], 
-            high=[x_range[1], y_range[1], theta_range[1]], 
-            size=(N_PARTICLE, 3)
-        )
+  global oath  ,dt , id ,map2
+  id =0
+  map2=MarkerArray()
+  oath = Path()  
+  # EKF state covariance
+  Cx = np.diag([0.25,0.25, np.deg2rad(10.0)]) ** 2
+  r= np.diag([1.0, 1.0])**2 # Process Noise
+  map_x2=[]
+  map_y2=[]
+  
+  pub=rospy.Publisher("/yassers_path",Path,queue_size=1)
+  pub2=rospy.Publisher("/global_map_yasser",MarkerArray, queue_size=0)
+  pub3=rospy.Publisher("/global_map_centroid",MarkerArray, queue_size=0)
 
-        # Calculate the mean of the particles
-        mean_particle = np.mean(particlesrand, axis=0)
-
-        # Adjust particles to have the mean of (0, 0, 0)
-        particlesrand -= mean_particle 
-        Particles=[]
-
-        for i in range(len(particlesrand)):
-            X=particlesrand[i][0]
-            Y=particlesrand[i][1]
-            Yaw=particlesrand[i][2]
-            particle=Particle(x=X,y=Y,yaw=Yaw)
-            Particles.append(particle)
-        x=fastslam(Particles)
-
-    except rospy.ROSInterruptException:
-        pass
-    rospy.spin()       
+  oath.header.frame_id="map"
+  MAX_RANGE = 6.0  # maximum observation range
+  M_DIST_TH = 1.0  # Threshold of Mahalanobis distance for data association.
+  STATE_SIZE = 3  # State size [x,y,yaw]
+  LM_SIZE = 2  # LM state size [x,y]
+  call_backs_data=callbacks_data()
+  try:
+      main(call_backs_data)
+  except rospy.ROSInterruptException:
+      pass
+  
