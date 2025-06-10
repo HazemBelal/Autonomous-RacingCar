@@ -89,6 +89,11 @@ class sensor():
         self.Vx = odom_msg.twist.twist.linear.x
         self.Vy = odom_msg.twist.twist.linear.y
         self.z=np.array([[self.Vx],[self.Vy]])
+        # Use the absolute orientation from odometry to correct yaw drift
+        q = odom_msg.pose.pose.orientation
+        orientation_list = [q.x, q.y, q.z, q.w]
+        (_, _, yaw) = euler_from_quaternion(orientation_list)
+        self.yaw = yaw
 
    def imu_callback(self, msg):
         self.angular_vel = msg.angular_velocity.z
@@ -211,7 +216,10 @@ def mainfun(s):
 # Adding Gaussian noise
     noise = np.random.normal(mean, std_dev)
     thing = Float32MultiArray()
-    aaa = [s.Vx ,s.Vy,s.Heading,s.yaw]
+    # Publish the filtered velocity estimates instead of the raw odometry
+    # velocities. This helps in reducing the noise that propagates to the
+    # localization module.
+    aaa = [float(s.xEst[0,0]) ,float(s.xEst[1,0]),s.Heading,s.yaw]
     '''thing.label[0] = "x"
     thing.size[0] = 1
     thing.stride[0] = s.Vx
