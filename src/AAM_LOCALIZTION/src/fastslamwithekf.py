@@ -13,8 +13,10 @@ from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 from ma_rrt_path_plan.msg import WaypointsArray
 
-N_PARTICLE = 20  # number of particle
-NTH= 2
+# Increase particle count for better diversity
+N_PARTICLE = 50  # number of particle
+# Resample when the effective number of particles drops below this threshold
+NTH = 10
 class Cone:
     def __init__(self, x,y,color,coneid):
         self.x=x
@@ -49,7 +51,9 @@ class fastslam:
         self.i=0
         self.yawspeed=0
         self.yawprev=0
-        self.Q_cov = np.diag([0.1, np.deg2rad(10.0)]) ** 2
+        # Reduced process noise to better reflect sensor uncertainty and
+        # produce smoother particle motion
+        self.Q_cov = np.diag([0.05, np.deg2rad(5.0)]) ** 2
         self.keys=[0,0]
         self.currtpred=rospy.Time.now().to_sec()
         self.currtyaw=rospy.Time.now().to_sec()
@@ -571,18 +575,22 @@ class fastslam:
         
                 return newcones,oldcones   
     def bicyclemodel(self,particle,dt):
+         # Smaller noise reflects the filtered state estimation
          mean = 0
-         std_dev = 0.4  # Adjust this value to control the amount of noise
-            # Adding Gaussian noise
+         std_dev = 0.2
          noise = np.random.normal(mean, std_dev)
-        #Simulating bicycle model
-         #noise=0
-         particle.x=particle.x+(self.vx+noise)*dt
-         particle.y=particle.y+(self.vy+noise)*dt
-         #particle.yaw=particle.yaw+self.angular_vel*dt
-         particle.yaw=self.ans
-         particle.yaw=self.pi_2_pi(particle.yaw) 
-         
+
+         # Transform body frame velocities to the world frame using the
+         # orientation estimate. This significantly reduces the zigzag
+         # behaviour caused by applying body frame velocities directly.
+         yaw = self.ans
+         vx_w = self.vx * math.cos(yaw) - self.vy * math.sin(yaw)
+         vy_w = self.vx * math.sin(yaw) + self.vy * math.cos(yaw)
+
+         particle.x = particle.x + (vx_w + noise) * dt
+         particle.y = particle.y + (vy_w + noise) * dt
+         particle.yaw = self.pi_2_pi(yaw)
+
          return particle
     def pi_2_pi(self,angle):
        #normalize angle
