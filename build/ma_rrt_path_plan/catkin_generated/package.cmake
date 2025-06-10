@@ -1,6 +1,6 @@
 set(_CATKIN_CURRENT_PACKAGE "ma_rrt_path_plan")
 set(ma_rrt_path_plan_VERSION "1.0.0")
-set(ma_rrt_path_plan_MAINTAINER "Maxim Yastremsky <maxim.yastremsky@egnition-hamburg.de>")
+set(ma_rrt_path_plan_MAINTAINER "Hazem <hazembelal288@gmail.com>")
 set(ma_rrt_path_plan_PACKAGE_FORMAT "2")
 set(ma_rrt_path_plan_BUILD_DEPENDS "rospy" "std_msgs" "geometry_msgs" "message_generation")
 set(ma_rrt_path_plan_BUILD_EXPORT_DEPENDS )

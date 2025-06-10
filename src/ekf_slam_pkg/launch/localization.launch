@@ -1,0 +1,22 @@
+<launch>
+  <!-- Use Gazebo’s /clock -->
+  <param name="use_sim_time" value="true"/>
+
+  <!-- EKF-SLAM node -->
+  <node
+    name="ekf_slam"
+    pkg="ekf_slam_pkg"
+    type="ekf_slam_node.py"
+    output="screen">
+    <remap from="/vel_ekf"     to="/vel_ekf"/>
+    <remap from="converted_pc" to="camera_cones_marker"/>
+    <remap from="/car_pose"    to="/robot_path"/>
+    <remap from="/global_map"  to="/cone_loc"/>
+  </node>
+
+  <!-- Launch RViz with the same config the old localization pkg used -->
+  <node
+    name="rviz_localization" pkg="rviz" type="rviz"
+    args="-d $(find AAM_LOCALIZTION)/rviz/slam.rviz"
+    output="screen"/>
+</launch>

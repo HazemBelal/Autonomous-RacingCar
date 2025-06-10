@@ -1,0 +1,8 @@
+prefix=/home/hazem/Downloads/project/devel
+
+Name: ekf_slam_pkg
+Description: Description of ekf_slam_pkg
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: aam_common_msgs ackermann_msgs geometry_msgs nav_msgs rospy sensor_msgs std_msgs visualization_msgs
