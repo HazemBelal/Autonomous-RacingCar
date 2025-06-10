@@ -61,7 +61,7 @@ class fastslam:
         self.currenttime=rospy.Time.now().to_sec()
         self. path_msg = Path()       
         self. path_msg.header.stamp = rospy.Time.now()
-        self.path_msg.header.frame_id = 'map'
+        self.path_msg.header.frame_id = 'odom'
         self.currentconeid=0
         self.timefromlast=rospy.Time.now().to_sec()
         self.ans=0
@@ -301,6 +301,8 @@ class fastslam:
         #     self.path_msg.poses = self.path_msg.poses[-max_poses:]
 
         # Publish the updated path
+        self.path_msg.header.stamp = rospy.Time.now()
+
         self.path_publisher.publish(self.path_msg)
 
         # Instead of computing the loop closure flag locally, use the flag from /waypoints:

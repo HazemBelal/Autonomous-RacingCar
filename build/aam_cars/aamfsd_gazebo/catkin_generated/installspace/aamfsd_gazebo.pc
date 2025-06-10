@@ -1,0 +1,8 @@
+prefix=/home/hazem/Downloads/project/install
+
+Name: aamfsd_gazebo
+Description: Description of aamfsd_gazebo
+Version: 0.1.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
