@@ -1,4 +1,4 @@
-prefix=/home/joe/catkin_ws/install
+prefix=/home/hazem/Downloads/project/install
 
 Name: aam_common_sim
 Description: Description of aam_common_sim

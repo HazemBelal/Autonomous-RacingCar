@@ -1,7 +1,7 @@
 file(REMOVE_RECURSE
-  "/home/joe/catkin_ws/devel/share/gennodejs/ros/ma_rrt_path_plan/msg/Map.js"
-  "/home/joe/catkin_ws/devel/share/gennodejs/ros/ma_rrt_path_plan/msg/Waypoint.js"
-  "/home/joe/catkin_ws/devel/share/gennodejs/ros/ma_rrt_path_plan/msg/WaypointsArray.js"
+  "/home/hazem/Downloads/project/devel/share/gennodejs/ros/ma_rrt_path_plan/msg/Map.js"
+  "/home/hazem/Downloads/project/devel/share/gennodejs/ros/ma_rrt_path_plan/msg/Waypoint.js"
+  "/home/hazem/Downloads/project/devel/share/gennodejs/ros/ma_rrt_path_plan/msg/WaypointsArray.js"
   "CMakeFiles/ma_rrt_path_plan_generate_messages_nodejs"
 )
 

@@ -67,14 +67,14 @@ set(AAM_STATE_ESTIMATION_CONFIG_INCLUDED TRUE)
 
 # set variables for source/devel/install prefixes
 if("FALSE" STREQUAL "TRUE")
-  set(AAM_STATE_ESTIMATION_SOURCE_PREFIX /home/joe/catkin_ws/src/AAM_STATE_ESTIMATION)
-  set(AAM_STATE_ESTIMATION_DEVEL_PREFIX /home/joe/catkin_ws/devel)
+  set(AAM_STATE_ESTIMATION_SOURCE_PREFIX /home/hazem/Downloads/project/src/AAM_STATE_ESTIMATION)
+  set(AAM_STATE_ESTIMATION_DEVEL_PREFIX /home/hazem/Downloads/project/devel)
   set(AAM_STATE_ESTIMATION_INSTALL_PREFIX "")
   set(AAM_STATE_ESTIMATION_PREFIX ${AAM_STATE_ESTIMATION_DEVEL_PREFIX})
 else()
   set(AAM_STATE_ESTIMATION_SOURCE_PREFIX "")
   set(AAM_STATE_ESTIMATION_DEVEL_PREFIX "")
-  set(AAM_STATE_ESTIMATION_INSTALL_PREFIX /home/joe/catkin_ws/install)
+  set(AAM_STATE_ESTIMATION_INSTALL_PREFIX /home/hazem/Downloads/project/install)
   set(AAM_STATE_ESTIMATION_PREFIX ${AAM_STATE_ESTIMATION_INSTALL_PREFIX})
 endif()
 
@@ -154,7 +154,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/joe/catkin_ws/install/lib;/home/joe/catkin_ws/devel/lib;/opt/ros/noetic/lib)
+    foreach(path /home/hazem/Downloads/project/install/lib;/home/hazem/Downloads/project/devel/lib;/home/hazem/catkin_ws/devel/lib;/opt/ros/noetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)

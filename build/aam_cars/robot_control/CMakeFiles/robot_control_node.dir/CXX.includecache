@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/joe/catkin_ws/src/aam_cars/robot_control/src/robot_control.cpp
+/home/hazem/Downloads/project/src/aam_cars/robot_control/src/robot_control.cpp
 ros/ros.h
 -
 sensor_msgs/JointState.h
@@ -22,15 +22,15 @@ nav_msgs/Odometry.h
 ackermann_msgs/AckermannDriveStamped.h
 -
 diagnostic_msgs/DiagnosticStatus.h
-/home/joe/catkin_ws/src/aam_cars/robot_control/src/diagnostic_msgs/DiagnosticStatus.h
+/home/hazem/Downloads/project/src/aam_cars/robot_control/src/diagnostic_msgs/DiagnosticStatus.h
 diagnostic_updater/diagnostic_updater.h
-/home/joe/catkin_ws/src/aam_cars/robot_control/src/diagnostic_updater/diagnostic_updater.h
+/home/hazem/Downloads/project/src/aam_cars/robot_control/src/diagnostic_updater/diagnostic_updater.h
 diagnostic_updater/update_functions.h
-/home/joe/catkin_ws/src/aam_cars/robot_control/src/diagnostic_updater/update_functions.h
+/home/hazem/Downloads/project/src/aam_cars/robot_control/src/diagnostic_updater/update_functions.h
 diagnostic_updater/DiagnosticStatusWrapper.h
-/home/joe/catkin_ws/src/aam_cars/robot_control/src/diagnostic_updater/DiagnosticStatusWrapper.h
+/home/hazem/Downloads/project/src/aam_cars/robot_control/src/diagnostic_updater/DiagnosticStatusWrapper.h
 diagnostic_updater/publisher.h
-/home/joe/catkin_ws/src/aam_cars/robot_control/src/diagnostic_updater/publisher.h
+/home/hazem/Downloads/project/src/aam_cars/robot_control/src/diagnostic_updater/publisher.h
 
 /opt/ros/noetic/include/ackermann_msgs/AckermannDrive.h
 string

@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/joe/catkin_ws/devel/share/common-lisp/ros/detection_msgs/msg/BoundingBox.lisp"
-  "/home/joe/catkin_ws/devel/share/common-lisp/ros/detection_msgs/msg/BoundingBoxes.lisp"
+  "/home/hazem/Downloads/project/devel/share/common-lisp/ros/detection_msgs/msg/BoundingBox.lisp"
+  "/home/hazem/Downloads/project/devel/share/common-lisp/ros/detection_msgs/msg/BoundingBoxes.lisp"
   "CMakeFiles/detection_msgs_generate_messages_lisp"
 )
 

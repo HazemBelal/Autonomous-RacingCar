@@ -1,8 +1,8 @@
-# Install script for directory: /home/joe/catkin_ws/src/AAM_STATE_ESTIMATION
+# Install script for directory: /home/hazem/Downloads/project/src/AAM_STATE_ESTIMATION
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/joe/catkin_ws/install")
+  set(CMAKE_INSTALL_PREFIX "/home/hazem/Downloads/project/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -38,17 +38,17 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/joe/catkin_ws/build/AAM_STATE_ESTIMATION/catkin_generated/installspace/AAM_STATE_ESTIMATION.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/hazem/Downloads/project/build/AAM_STATE_ESTIMATION/catkin_generated/installspace/AAM_STATE_ESTIMATION.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/AAM_STATE_ESTIMATION/cmake" TYPE FILE FILES
-    "/home/joe/catkin_ws/build/AAM_STATE_ESTIMATION/catkin_generated/installspace/AAM_STATE_ESTIMATIONConfig.cmake"
-    "/home/joe/catkin_ws/build/AAM_STATE_ESTIMATION/catkin_generated/installspace/AAM_STATE_ESTIMATIONConfig-version.cmake"
+    "/home/hazem/Downloads/project/build/AAM_STATE_ESTIMATION/catkin_generated/installspace/AAM_STATE_ESTIMATIONConfig.cmake"
+    "/home/hazem/Downloads/project/build/AAM_STATE_ESTIMATION/catkin_generated/installspace/AAM_STATE_ESTIMATIONConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/AAM_STATE_ESTIMATION" TYPE FILE FILES "/home/joe/catkin_ws/src/AAM_STATE_ESTIMATION/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/AAM_STATE_ESTIMATION" TYPE FILE FILES "/home/hazem/Downloads/project/src/AAM_STATE_ESTIMATION/package.xml")
 endif()
 

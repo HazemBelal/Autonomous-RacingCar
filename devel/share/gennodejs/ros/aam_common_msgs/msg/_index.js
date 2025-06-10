@@ -1,24 +1,24 @@
 
 "use strict";
 
-let CarState = require('./CarState.js');
-let ConeDetections = require('./ConeDetections.js');
-let Map = require('./Map.js');
+let BoundingBoxes = require('./BoundingBoxes.js');
 let Mission = require('./Mission.js');
 let ControlCommand = require('./ControlCommand.js');
-let BoundingBoxes = require('./BoundingBoxes.js');
+let ConeDetections = require('./ConeDetections.js');
+let Cone = require('./Cone.js');
+let CarState = require('./CarState.js');
 let CarStateDt = require('./CarStateDt.js');
 let BoundingBox = require('./BoundingBox.js');
-let Cone = require('./Cone.js');
+let Map = require('./Map.js');
 
 module.exports = {
-  CarState: CarState,
-  ConeDetections: ConeDetections,
-  Map: Map,
+  BoundingBoxes: BoundingBoxes,
   Mission: Mission,
   ControlCommand: ControlCommand,
-  BoundingBoxes: BoundingBoxes,
+  ConeDetections: ConeDetections,
+  Cone: Cone,
+  CarState: CarState,
   CarStateDt: CarStateDt,
   BoundingBox: BoundingBox,
-  Cone: Cone,
+  Map: Map,
 };

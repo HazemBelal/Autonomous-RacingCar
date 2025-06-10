@@ -1,12 +1,12 @@
 
 "use strict";
 
-let Map = require('./Map.js');
-let Waypoint = require('./Waypoint.js');
 let WaypointsArray = require('./WaypointsArray.js');
+let Waypoint = require('./Waypoint.js');
+let Map = require('./Map.js');
 
 module.exports = {
-  Map: Map,
-  Waypoint: Waypoint,
   WaypointsArray: WaypointsArray,
+  Waypoint: Waypoint,
+  Map: Map,
 };

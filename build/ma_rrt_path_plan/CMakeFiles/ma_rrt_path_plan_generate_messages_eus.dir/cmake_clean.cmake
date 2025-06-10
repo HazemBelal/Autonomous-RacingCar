@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
-  "/home/joe/catkin_ws/devel/share/roseus/ros/ma_rrt_path_plan/manifest.l"
-  "/home/joe/catkin_ws/devel/share/roseus/ros/ma_rrt_path_plan/msg/Map.l"
-  "/home/joe/catkin_ws/devel/share/roseus/ros/ma_rrt_path_plan/msg/Waypoint.l"
-  "/home/joe/catkin_ws/devel/share/roseus/ros/ma_rrt_path_plan/msg/WaypointsArray.l"
+  "/home/hazem/Downloads/project/devel/share/roseus/ros/ma_rrt_path_plan/manifest.l"
+  "/home/hazem/Downloads/project/devel/share/roseus/ros/ma_rrt_path_plan/msg/Map.l"
+  "/home/hazem/Downloads/project/devel/share/roseus/ros/ma_rrt_path_plan/msg/Waypoint.l"
+  "/home/hazem/Downloads/project/devel/share/roseus/ros/ma_rrt_path_plan/msg/WaypointsArray.l"
   "CMakeFiles/ma_rrt_path_plan_generate_messages_eus"
 )
 

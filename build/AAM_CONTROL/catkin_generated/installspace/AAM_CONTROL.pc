@@ -1,4 +1,4 @@
-prefix=/home/joe/catkin_ws/install
+prefix=/home/hazem/Downloads/project/install
 
 Name: AAM_CONTROL
 Description: Description of AAM_CONTROL

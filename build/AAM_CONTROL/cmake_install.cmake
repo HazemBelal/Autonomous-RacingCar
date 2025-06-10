@@ -1,8 +1,8 @@
-# Install script for directory: /home/joe/catkin_ws/src/AAM_CONTROL
+# Install script for directory: /home/hazem/Downloads/project/src/AAM_CONTROL
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/joe/catkin_ws/install")
+  set(CMAKE_INSTALL_PREFIX "/home/hazem/Downloads/project/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -38,17 +38,17 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/joe/catkin_ws/build/AAM_CONTROL/catkin_generated/installspace/AAM_CONTROL.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/hazem/Downloads/project/build/AAM_CONTROL/catkin_generated/installspace/AAM_CONTROL.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/AAM_CONTROL/cmake" TYPE FILE FILES
-    "/home/joe/catkin_ws/build/AAM_CONTROL/catkin_generated/installspace/AAM_CONTROLConfig.cmake"
-    "/home/joe/catkin_ws/build/AAM_CONTROL/catkin_generated/installspace/AAM_CONTROLConfig-version.cmake"
+    "/home/hazem/Downloads/project/build/AAM_CONTROL/catkin_generated/installspace/AAM_CONTROLConfig.cmake"
+    "/home/hazem/Downloads/project/build/AAM_CONTROL/catkin_generated/installspace/AAM_CONTROLConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/AAM_CONTROL" TYPE FILE FILES "/home/joe/catkin_ws/src/AAM_CONTROL/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/AAM_CONTROL" TYPE FILE FILES "/home/hazem/Downloads/project/src/AAM_CONTROL/package.xml")
 endif()
 

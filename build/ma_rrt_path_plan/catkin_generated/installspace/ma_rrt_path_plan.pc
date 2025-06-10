@@ -1,4 +1,4 @@
-prefix=/home/joe/catkin_ws/install
+prefix=/home/hazem/Downloads/project/install
 
 Name: ma_rrt_path_plan
 Description: Description of ma_rrt_path_plan

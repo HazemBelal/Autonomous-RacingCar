@@ -1,4 +1,4 @@
-prefix=/home/joe/catkin_ws/install
+prefix=/home/hazem/Downloads/project/install
 
 Name: yolov5_ros
 Description: Description of yolov5_ros

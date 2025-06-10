@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/joe/catkin_ws/devel/lib/lidar_cone_detection/lidar_cone_detection"
-  "/home/joe/catkin_ws/devel/lib/lidar_cone_detection/lidar_cone_detection.pdb"
+  "/home/hazem/Downloads/project/devel/lib/lidar_cone_detection/lidar_cone_detection"
+  "/home/hazem/Downloads/project/devel/lib/lidar_cone_detection/lidar_cone_detection.pdb"
   "CMakeFiles/lidar_cone_detection.dir/src/lidar_cone_detection.cpp.o"
 )
 

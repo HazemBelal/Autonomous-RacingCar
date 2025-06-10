@@ -1,4 +1,4 @@
-prefix=/home/joe/catkin_ws/devel
+prefix=/home/hazem/Downloads/project/devel
 
 Name: AAM_LOCALIZTION
 Description: Description of AAM_LOCALIZTION

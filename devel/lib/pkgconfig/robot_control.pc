@@ -1,4 +1,4 @@
-prefix=/home/joe/catkin_ws/devel
+prefix=/home/hazem/Downloads/project/devel
 
 Name: robot_control
 Description: Description of robot_control

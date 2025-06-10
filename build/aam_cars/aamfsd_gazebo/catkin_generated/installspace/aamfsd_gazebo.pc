@@ -1,4 +1,4 @@
-prefix=/home/joe/catkin_ws/install
+prefix=/home/hazem/Downloads/project/install
 
 Name: aamfsd_gazebo
 Description: Description of aamfsd_gazebo

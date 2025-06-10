@@ -1,8 +1,8 @@
-# Install script for directory: /home/joe/catkin_ws/src/LAUNCH
+# Install script for directory: /home/hazem/Downloads/project/src/LAUNCH
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/joe/catkin_ws/install")
+  set(CMAKE_INSTALL_PREFIX "/home/hazem/Downloads/project/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -38,17 +38,17 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/joe/catkin_ws/build/LAUNCH/catkin_generated/installspace/LAUNCH.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/hazem/Downloads/project/build/LAUNCH/catkin_generated/installspace/LAUNCH.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/LAUNCH/cmake" TYPE FILE FILES
-    "/home/joe/catkin_ws/build/LAUNCH/catkin_generated/installspace/LAUNCHConfig.cmake"
-    "/home/joe/catkin_ws/build/LAUNCH/catkin_generated/installspace/LAUNCHConfig-version.cmake"
+    "/home/hazem/Downloads/project/build/LAUNCH/catkin_generated/installspace/LAUNCHConfig.cmake"
+    "/home/hazem/Downloads/project/build/LAUNCH/catkin_generated/installspace/LAUNCHConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/LAUNCH" TYPE FILE FILES "/home/joe/catkin_ws/src/LAUNCH/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/LAUNCH" TYPE FILE FILES "/home/hazem/Downloads/project/src/LAUNCH/package.xml")
 endif()
 

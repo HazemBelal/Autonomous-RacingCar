@@ -3,7 +3,7 @@
   <name>ma_rrt_path_plan</name>
   <version>1.0.0</version>
   <description>The ma_rrt_path_plan package</description>
-  <maintainer email="maxim.yastremsky@egnition-hamburg.de">Maxim Yastremsky</maintainer>
+  <maintainer email="hazembelal288@gmail.com">Hazem</maintainer>
   <license>MIT</license>
 
   <!-- Build tool dependency -->
