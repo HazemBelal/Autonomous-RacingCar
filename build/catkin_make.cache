@@ -1,2 +1,0 @@
-AAM_CONTROL:AAM_LOCALIZTION:AAM_PATH_PLANNING:AAM_PERCEPTION/camera_cone_detection:AAM_PERCEPTION/lidar_cone_detection:AAM_PERCEPTION/new_loc:AAM_PERCEPTION/yolov5_ros:AAM_STATE_ESTIMATION:LAUNCH:PLUGINS:aam_cars/aamfsd_description:aam_cars/aamfsd_gazebo:aam_cars/robot_control:aam_common/aam_common_msgs:aam_common/aam_common_sim:detection_msgs:ma_rrt_path_plan
--DCATKIN_DEVEL_PREFIX=/home/hazem/Downloads/project/devel -DCMAKE_INSTALL_PREFIX=/home/hazem/Downloads/project/install -G Unix Makefiles
