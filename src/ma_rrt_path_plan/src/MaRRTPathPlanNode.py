@@ -122,13 +122,12 @@ class MaRRTPathPlanNode:
              rospy.logdebug("Cone[%d]: x=%.2f, y=%.2f", i, cone.x, cone.y)
 
     def sampleTree(self):
-        
-        rospy.loginfo("Planner sampleTree(): Car pos=(%.2f, %.2f), yaw=%.2f", 
+
+        rospy.loginfo("Planner sampleTree(): Car pos=(%.2f, %.2f), yaw=%.2f",
               self.carPosX, self.carPosY, self.carPosYaw)
 
-
-
         # sampleTreeStartTime = time.time()
+        published = False
 
         if self.loopClosure and len(self.savedWaypoints) > 0:
             rospy.loginfo("Loop closure detected and saved waypoints exist. Publishing predefined waypoints.")
@@ -140,8 +139,8 @@ class MaRRTPathPlanNode:
 
         if not self.map:
             rospy.logwarn("sampleTree() exiting: map is empty")
-
-            # print "sampleTree(): map is still empty, return"
+            # Publish whatever waypoints we have to avoid control jitter
+            self.publishWaypoints()
             return
         rospy.loginfo("Map has %d cones; proceeding with RRT planning", len(self.map.cones))
         # print "map size: {0}".format(len(self.map.cones));
@@ -235,6 +234,14 @@ class MaRRTPathPlanNode:
                     # print "merge waypoints time: {0} ms".format((time.time() - mergeWaypointsStartTime) * 1000);
 
                 self.publishWaypoints(newWaypoints)
+                published = True
+
+        if not bestBranch or not published:
+            rospy.logwarn("sampleTree(): No new waypoints generated, using fallback")
+            if self.savedWaypoints:
+                self.publishWaypoints()
+            else:
+                self.publishWaypoints(self.getFallbackWaypoints())
 
         # print "whole map callback: {0} ms".format((time.time() - sampleTreeStartTime)*1000);
 
@@ -862,6 +869,16 @@ class MaRRTPathPlanNode:
             if ((cone.x - x) ** 2 + (cone.y - y) ** 2) < radiusSq:
                 coneList.append(cone)
         return coneList
+
+    def getFallbackWaypoints(self, step=1.0, count=5):
+        """Generate simple straight-line waypoints when perception data is missing."""
+        heading = self.getHeadingVector()
+        waypoints = []
+        for i in range(1, count + 1):
+            wp_x = self.carPosX + heading[0] * step * i
+            wp_y = self.carPosY + heading[1] * step * i
+            waypoints.append((wp_x, wp_y))
+        return waypoints
 
 class Edge():
     def __init__(self, x1, y1, x2, y2):
