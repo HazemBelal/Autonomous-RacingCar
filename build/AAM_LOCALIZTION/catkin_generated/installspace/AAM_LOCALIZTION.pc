@@ -1,8 +1,0 @@
-prefix=/home/hazem/Downloads/project/install
-
-Name: AAM_LOCALIZTION
-Description: Description of AAM_LOCALIZTION
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
