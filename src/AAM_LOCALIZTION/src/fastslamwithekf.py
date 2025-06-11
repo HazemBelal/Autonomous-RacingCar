@@ -59,11 +59,13 @@ class fastslam:
         self.currtpred=rospy.Time.now().to_sec()
         self.currtyaw=rospy.Time.now().to_sec()
         self.angular_vel=0
+
         self.last_pred_time = rospy.Time.now().to_sec()
         self.path_msg = Path()
         self.path_msg.header.stamp = rospy.Time.now()
         # Use the global map frame for the published path so that RViz can
         # correctly display it without requiring a transform from 'odom'.
+
         self.path_msg.header.frame_id = 'map'
         self.currentconeid=0
         self.timefromlast=rospy.Time.now().to_sec()
@@ -73,7 +75,9 @@ class fastslam:
         rospy.Subscriber('/waypoints', WaypointsArray, self.waypoints_callback)
 
         self.commandcontrol_sub = rospy.Subscriber("vel_ekf",Float32MultiArray, self.control_callback)
+
         self.path_publisher = rospy.Publisher('/robot_path', Path, queue_size=1)
+
         
         self.pc_pub = rospy.Publisher("cone_loc", MarkerArray, queue_size=1)
         self.testcone=rospy.Publisher("/test", MarkerArray, queue_size=1)
@@ -101,6 +105,7 @@ class fastslam:
         self.vy = controls.data[1]
         self.ans = controls.data[3]
 
+
     def _on_timer(self, event):
         """Periodic prediction step run at a fixed frequency."""
         now = rospy.Time.now().to_sec()
@@ -113,6 +118,7 @@ class fastslam:
         if self.currentnewcones is not None:
             self.update()
             self.currentnewcones = None
+
     def update(self):
         rospy.loginfo("Update step started")
         #calculating estimate
@@ -281,7 +287,9 @@ class fastslam:
         rospy.loginfo("Adding pose to path x=%f y=%f", x1, y1)
         # Create a new PoseStamped for the current estimate
         pose = PoseStamped()
-        pose.header.stamp = rospy.Time.now()
+        # Use a zero timestamp so outdated TF data does not cause the path to
+        # vanish in RViz when the car moves.
+        pose.header.stamp = rospy.Time(0)
         pose.header.frame_id = 'map'
         pose.pose.position.x = x1
         pose.pose.position.y = y1
@@ -297,8 +305,10 @@ class fastslam:
         # if len(self.path_msg.poses) > max_poses:
         #     self.path_msg.poses = self.path_msg.poses[-max_poses:]
 
+
         # Publish the updated path with the current time stamp
         self.path_msg.header.stamp = rospy.Time.now()
+
 
         self.path_publisher.publish(self.path_msg)
         rospy.loginfo("Published path")
