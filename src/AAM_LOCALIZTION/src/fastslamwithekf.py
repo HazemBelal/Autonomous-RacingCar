@@ -60,6 +60,7 @@ class fastslam:
         self.currtyaw=rospy.Time.now().to_sec()
         self.angular_vel=0
         self.currenttime=rospy.Time.now().to_sec()
+
         self.path_msg = Path()
         # Use a zero timestamp so RViz will transform the path using the latest
         # available transform rather than looking up a specific time, which can
@@ -67,6 +68,7 @@ class fastslam:
         self.path_msg.header.stamp = rospy.Time(0)
         # Use the global map frame for the published path so that RViz can
         # correctly display it without requiring a transform from 'odom'.
+
         self.path_msg.header.frame_id = 'map'
         self.currentconeid=0
         self.timefromlast=rospy.Time.now().to_sec()
@@ -76,10 +78,13 @@ class fastslam:
         rospy.Subscriber('/waypoints', WaypointsArray, self.waypoints_callback)
 
         self.commandcontrol_sub = rospy.Subscriber("vel_ekf",Float32MultiArray, self.control_callback)
-        # Latch the path publisher so RViz continues to display the last path
-        # even if updates momentarily stop.
-        self.path_publisher = rospy.Publisher('/robot_path', Path, queue_size=10, latch=True)
-        rospy.loginfo("Path publisher created with latch")
+
+        
+        self.path_publisher = rospy.Publisher(
+            '/robot_path', Path,
+            queue_size=10,
+            latch=True              # ← hold the last Path forever
+        )
         
         self.pc_pub = rospy.Publisher("cone_loc", MarkerArray, queue_size=1)
         self.testcone=rospy.Publisher("/test", MarkerArray, queue_size=1)
