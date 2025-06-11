@@ -51,6 +51,9 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
+    - Class: rviz/TF
+      Enabled: true
+      Name: TF
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /cone_loc
@@ -62,7 +65,7 @@ Visualization Manager:
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
-      Color: 25; 255; 0
+      Color: 0; 255; 0
       Enabled: true
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
@@ -95,6 +98,14 @@ Visualization Manager:
       Enabled: true
       Marker Topic: /particles_pub
       Name: MarkerArray
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /velocity_vectors
+      Name: Vectors
       Namespaces:
         "": true
       Queue Size: 100

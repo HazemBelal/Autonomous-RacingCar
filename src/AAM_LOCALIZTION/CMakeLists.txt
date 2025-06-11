@@ -10,6 +10,8 @@ project(AAM_LOCALIZTION)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
+  visualization_msgs
+  tf_conversions
 )
 
 ## System dependencies are found with CMake's conventions
@@ -102,10 +104,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES AAM_LOCALIZTION
-#  CATKIN_DEPENDS rospy std_msgs
-#  DEPENDS system_lib
+  CATKIN_DEPENDS rospy std_msgs visualization_msgs tf_conversions
 )
 
 ###########
