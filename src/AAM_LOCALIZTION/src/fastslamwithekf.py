@@ -49,13 +49,13 @@ class fastslam:
         self.faultycones=[]
         self.vx=0
         self.vy=0
-        self.i=0
         self.yawspeed=0
         self.yawprev=0
         # Reduced process noise to better reflect sensor uncertainty and
         # produce smoother particle motion
         self.Q_cov = np.diag([0.05, np.deg2rad(5.0)]) ** 2
-        self.keys=[0,0]
+        # Cached cones for the next measurement update
+        self.currentnewcones = None
         self.currtpred=rospy.Time.now().to_sec()
         self.currtyaw=rospy.Time.now().to_sec()
         self.angular_vel=0
@@ -85,8 +85,10 @@ class fastslam:
         self.testcone=rospy.Publisher("/test", MarkerArray, queue_size=1)
         self.particles_pub = rospy.Publisher("particles_pub", MarkerArray, queue_size=1)
         self.marker_pub = rospy.Publisher('visualization_loc', Marker, queue_size=10)
-        self.id1=0 
+        self.id1=0
         self.id2=100
+        # Run prediction at a fixed rate so dt remains consistent
+        self.pred_timer = rospy.Timer(rospy.Duration(0.05), self._on_timer)
     def waypoints_callback(self, wp):
         # Assuming wp has fields 'loopClosure' and 'preliminaryLoopClosure'
         rospy.loginfo("Waypoints callback: loopClosure=%s, preliminary=%s", wp.loopClosure, wp.preliminaryLoopClosure)
@@ -94,48 +96,43 @@ class fastslam:
         self.preliminaryLoopClosureFlag = wp.preliminaryLoopClosure
 
     def cones_callback(self,reccones):
-        if self.keys[0] != -1:
-            rospy.loginfo("Cones callback: received %d markers", len(reccones.markers))
-            self.keys[0] = 0
-            self.currentnewcones=reccones
-
-            self.keys[0] = 1
-            self.predict()
+        rospy.loginfo("Cones callback: received %d markers", len(reccones.markers))
+        # Cache the cones for the next measurement update. Prediction now runs
+        # on a timer or whenever control data arrives, so we simply store the
+        # cones until the next prediction step processes them.
+        self.currentnewcones = reccones
     def control_callback (self,controls):
+        rospy.loginfo("Control callback: vx=%f vy=%f yaw=%f", controls.data[0], controls.data[1], controls.data[3])
+        self.vx = controls.data[0]
+        self.vy = controls.data[1]
+        self.ans = controls.data[3]
 
-                        if self.keys[1] != -1:
-                            rospy.loginfo("Control callback: vx=%f vy=%f yaw=%f", controls.data[0], controls.data[1], controls.data[3])
-                            self.keys[1] = 0
-                            self.vx=controls.data[0]
-                            self.vy=controls.data[1]
-                            self.ans=controls.data[3]
-                            #print(self.vx)
-                            self.keys[1] = 1
-                            self.predict()
-    def predict(self):
-        rospy.loginfo("Predict step started")
-        #predicting each particle depending on state estimation readings
-        if self.keys[0] == 1 and self.keys[1] == 1:
+        # Perform the prediction step on every control update so that dt stays
+        # consistent even if cone detections are sparse.
+        now = rospy.Time.now().to_sec()
+        dt = now - self.currenttime
+        self.currenttime = now
+        rospy.loginfo("dt computed: %f", dt)
+        for i in range(len(self.particles)):
+            self.particles[i] = self.bicyclemodel(self.particles[i], dt)
 
-            self.keys = [-1, -1]
-            #calculating dt
-
-            if (self.i==0):
-                dt=0.05
-                self.i=1
-                self.timefromlast=rospy.Time.now().to_sec()
-            else:
-                currenttime1=rospy.Time.now().to_sec()
-                dt=(currenttime1-self.currenttime)
-                rospy.loginfo("dt computed: %f", dt)
-                for i in range(len(self.particles)):
-                    self.particles[i]=self.bicyclemodel(self.particles[i],dt)
-            #print(dt)        
-            self.currenttime=rospy.Time.now().to_sec()
+        # After predicting, incorporate any pending cone measurements.
+        if self.currentnewcones is not None:
             self.update()
-        rospy.loginfo("Predict step finished")
-    
+            self.currentnewcones = None
 
+    def _on_timer(self, event):
+        """Periodic prediction step run at a fixed frequency."""
+        now = rospy.Time.now().to_sec()
+        dt = now - self.currenttime
+        self.currenttime = now
+        rospy.loginfo("Timer dt computed: %f", dt)
+        for i in range(len(self.particles)):
+            self.particles[i] = self.bicyclemodel(self.particles[i], dt)
+
+        if self.currentnewcones is not None:
+            self.update()
+            self.currentnewcones = None
     def update(self):
         rospy.loginfo("Update step started")
         #calculating estimate
@@ -238,7 +235,6 @@ class fastslam:
 
              self.testcone.publish(marker_array)
              
-        self.keys=[0,0]
     def visualizeloc(self):
         rospy.loginfo("Visualizing current location x=%f y=%f", self.est[0], self.est[1])
         marker = Marker()
