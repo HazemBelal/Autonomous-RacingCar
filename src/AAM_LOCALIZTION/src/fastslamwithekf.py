@@ -10,7 +10,7 @@ from scipy.stats import multivariate_normal
 from std_msgs.msg import Float32MultiArray
 from sensor_msgs.msg import Imu
 from nav_msgs.msg import Path
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Quaternion
 from ma_rrt_path_plan.msg import WaypointsArray
 
 # Increase particle count for better diversity
@@ -59,13 +59,10 @@ class fastslam:
         self.currtpred=rospy.Time.now().to_sec()
         self.currtyaw=rospy.Time.now().to_sec()
         self.angular_vel=0
-        self.currenttime=rospy.Time.now().to_sec()
 
+        self.last_pred_time = rospy.Time.now().to_sec()
         self.path_msg = Path()
-        # Use a zero timestamp so RViz will transform the path using the latest
-        # available transform rather than looking up a specific time, which can
-        # cause the display to disappear once old TF data is dropped.
-        self.path_msg.header.stamp = rospy.Time(0)
+        self.path_msg.header.stamp = rospy.Time.now()
         # Use the global map frame for the published path so that RViz can
         # correctly display it without requiring a transform from 'odom'.
 
@@ -79,12 +76,8 @@ class fastslam:
 
         self.commandcontrol_sub = rospy.Subscriber("vel_ekf",Float32MultiArray, self.control_callback)
 
-        
-        self.path_publisher = rospy.Publisher(
-            '/robot_path', Path,
-            queue_size=10,
-            latch=True              # ← hold the last Path forever
-        )
+        self.path_publisher = rospy.Publisher('/robot_path', Path, queue_size=1)
+
         
         self.pc_pub = rospy.Publisher("cone_loc", MarkerArray, queue_size=1)
         self.testcone=rospy.Publisher("/test", MarkerArray, queue_size=1)
@@ -112,25 +105,12 @@ class fastslam:
         self.vy = controls.data[1]
         self.ans = controls.data[3]
 
-        # Perform the prediction step on every control update so that dt stays
-        # consistent even if cone detections are sparse.
-        now = rospy.Time.now().to_sec()
-        dt = now - self.currenttime
-        self.currenttime = now
-        rospy.loginfo("dt computed: %f", dt)
-        for i in range(len(self.particles)):
-            self.particles[i] = self.bicyclemodel(self.particles[i], dt)
-
-        # After predicting, incorporate any pending cone measurements.
-        if self.currentnewcones is not None:
-            self.update()
-            self.currentnewcones = None
 
     def _on_timer(self, event):
         """Periodic prediction step run at a fixed frequency."""
         now = rospy.Time.now().to_sec()
-        dt = now - self.currenttime
-        self.currenttime = now
+        dt = now - self.last_pred_time
+        self.last_pred_time = now
         rospy.loginfo("Timer dt computed: %f", dt)
         for i in range(len(self.particles)):
             self.particles[i] = self.bicyclemodel(self.particles[i], dt)
@@ -138,6 +118,7 @@ class fastslam:
         if self.currentnewcones is not None:
             self.update()
             self.currentnewcones = None
+
     def update(self):
         rospy.loginfo("Update step started")
         #calculating estimate
@@ -313,6 +294,7 @@ class fastslam:
         pose.pose.position.x = x1
         pose.pose.position.y = y1
         pose.pose.position.z = 0  # or your desired z value
+        pose.pose.orientation = Quaternion(0.0, 0.0, 0.0, 1.0)
 
         # Append the current pose to the path message
         self.path_msg.poses.append(pose)
@@ -323,9 +305,10 @@ class fastslam:
         # if len(self.path_msg.poses) > max_poses:
         #     self.path_msg.poses = self.path_msg.poses[-max_poses:]
 
-        # Publish the updated path with a zero timestamp for the same reason
-        # as above.
-        self.path_msg.header.stamp = rospy.Time(0)
+
+        # Publish the updated path with the current time stamp
+        self.path_msg.header.stamp = rospy.Time.now()
+
 
         self.path_publisher.publish(self.path_msg)
         rospy.loginfo("Published path")
