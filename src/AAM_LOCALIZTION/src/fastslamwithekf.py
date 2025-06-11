@@ -4,6 +4,7 @@ import string
 import matplotlib.pyplot as plt
 import rospy
 from visualization_msgs.msg import Marker, MarkerArray
+import tf_conversions
 import numpy as np
 from ackermann_msgs.msg import AckermannDriveStamped
 from scipy.stats import multivariate_normal
@@ -72,7 +73,9 @@ class fastslam:
         self.testcone=rospy.Publisher("/test", MarkerArray, queue_size=1)
         self.particles_pub = rospy.Publisher("particles_pub", MarkerArray, queue_size=1)
         self.marker_pub = rospy.Publisher('visualization_loc', Marker, queue_size=10)
-        self.id1=0 
+        self.vel_pub = rospy.Publisher('/velocity_vectors', MarkerArray, queue_size=1)
+        self.vel_timer = rospy.Timer(rospy.Duration(0.1), self.publish_velocity_markers)
+        self.id1=0
         self.id2=100
     def waypoints_callback(self, wp):
         # Assuming wp has fields 'loopClosure' and 'preliminaryLoopClosure'
@@ -86,6 +89,11 @@ class fastslam:
             
             self.keys[0] = 1
             self.predict()
+            rospy.loginfo_throttle(1.0,
+              "Particles: %d   Path length: %d   Cones: %d",
+              len(self.particles),
+              len(self.path_msg.poses),
+              len(self.goodcones))
     def control_callback (self,controls):
                        
                         if self.keys[1] != -1:
@@ -96,6 +104,11 @@ class fastslam:
                             #print(self.vx)
                             self.keys[1] = 1
                             self.predict()
+                            rospy.loginfo_throttle(1.0,
+              "Particles: %d   Path length: %d   Cones: %d",
+              len(self.particles),
+              len(self.path_msg.poses),
+              len(self.goodcones))
     def predict(self):
                                      
         
@@ -217,7 +230,13 @@ class fastslam:
                     marker_array.markers.append(marker)
 
              self.testcone.publish(marker_array)
-             
+
+        rospy.loginfo_throttle(1.0,
+            "Particles: %d   Path length: %d   Cones: %d",
+            len(self.particles),
+            len(self.path_msg.poses),
+            len(self.goodcones))
+
         self.keys=[0,0]
     def visualizeloc(self):
         marker = Marker()
@@ -278,6 +297,38 @@ class fastslam:
             # Add the marker to the marker array
             marker_array.markers.append(marker)
           self.particles_pub.publish(marker_array)
+
+    def publish_velocity_markers(self, event):
+        markers = MarkerArray()
+        for i, p in enumerate(self.particles):
+            m = Marker()
+            m.header.frame_id = 'map'
+            m.header.stamp = rospy.Time.now()
+            m.ns = 'velocity'
+            m.id = i
+            m.type = Marker.ARROW
+            m.action = Marker.ADD
+            m.pose.position.x = p.x
+            m.pose.position.y = p.y
+            m.pose.position.z = 0
+            yaw = p.yaw
+            vx_w = self.vx * math.cos(yaw) - self.vy * math.sin(yaw)
+            vy_w = self.vx * math.sin(yaw) + self.vy * math.cos(yaw)
+            angle = math.atan2(vy_w, vx_w)
+            q = tf_conversions.transformations.quaternion_from_euler(0, 0, angle)
+            m.pose.orientation.x = q[0]
+            m.pose.orientation.y = q[1]
+            m.pose.orientation.z = q[2]
+            m.pose.orientation.w = q[3]
+            m.scale.x = math.hypot(vx_w, vy_w) * 0.5
+            m.scale.y = 0.05
+            m.scale.z = 0.05
+            m.color.r = 1.0
+            m.color.g = 1.0
+            m.color.b = 0.0
+            m.color.a = 1.0
+            markers.markers.append(m)
+        self.vel_pub.publish(markers)
          
     def visualizeb(self, x1, y1):
         # Create a new PoseStamped for the current estimate
@@ -297,6 +348,7 @@ class fastslam:
         #     self.path_msg.poses = self.path_msg.poses[-max_poses:]
 
         # Publish the updated path
+        self.path_msg.header.stamp = rospy.Time.now()
         self.path_publisher.publish(self.path_msg)
 
         # Instead of computing the loop closure flag locally, use the flag from /waypoints:

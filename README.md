@@ -144,3 +144,19 @@ When the camera detects cones, it gives positions *relative* to the car. We must
 > 5. As you drive around, your group’s guesses cluster tightly on the car’s true path, and their cone map fills in accurately.
 
 That is **fastSLAM with an EKF map** in the simplest terms!
+
+## Visualization Setup
+
+Launch the localization node together with RViz:
+
+```bash
+$ roslaunch AAM_LOCALIZTION localization.launch
+```
+
+RViz will show:
+
+* **TF** tree of `map` and `odom` frames.
+* **Path** display on `/robot_path` in bright green.
+* **MarkerArray** displays for `/particles_pub` and `/cone_loc`.
+* **Marker** display for `/visualization_loc`.
+* **Vector** display for `/velocity_vectors` showing the current velocity arrows.
