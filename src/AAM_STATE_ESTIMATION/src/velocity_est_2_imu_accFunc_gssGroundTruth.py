@@ -4,7 +4,8 @@ import numpy as np
 import rospy
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
-
+from geometry_msgs.msg import Quaternion
+import tf_conversions
 
 class sensor(object):
     def __init__(self):
@@ -82,9 +83,19 @@ class sensor(object):
         odom = Odometry()
         odom.header.stamp = rospy.Time.now()
         odom.header.frame_id = 'odom'
-        odom.twist.twist.linear.x = self.xEst[0, 0]
-        odom.twist.twist.linear.y = self.xEst[1, 0]
+        # world‐frame EKF estimate
+        vx_w = self.xEst[0, 0]
+        vy_w = self.xEst[1, 0]
+        # convert back to body‐frame using current yaw
+        c, s = math.cos(self.yaw), math.sin(self.yaw)
+        v_body_x =  c * vx_w + s * vy_w
+        v_body_y = -s * vx_w + c * vy_w
+
+        odom.twist.twist.linear.x = v_body_x
+        odom.twist.twist.linear.y = v_body_y
         odom.twist.twist.angular.z = self.angular_vel
+        q = tf_conversions.transformations.quaternion_from_euler(0, 0, self.yaw)
+        odom.pose.pose.orientation = Quaternion(*q)
         self.pub.publish(odom)
 
 

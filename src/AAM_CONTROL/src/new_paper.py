@@ -302,7 +302,7 @@ def waypoints_callback(wp_msg):
     # 7) Compute vel from curvature and clamp if desired
     vel = Another_speed(k)
     # Example clamp (uncomment if you want to enforce max speed):
-    # vel = min(vel, 0.3)
+    vel = min(vel, 0.5)
     last_waypoint_vel = vel
     rospy.loginfo("waypoints_callback: Computed vel = %.3f", vel)
 
